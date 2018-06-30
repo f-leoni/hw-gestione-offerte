@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <?!= include('CSS'); ?>
+</head>
+
+<body>
+  <div class="mdl-layout mdl-layout--fixed-header mdl-js-layout mdl-color--grey-100">
+    <header class="mdl-layout__header is-casting-shadow">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title" style="color:white;">Creazione offerte Olivetti Scuola Digitale</span>
+        <div class="mdl-layout-spacer"></div>
+      </div>
+    </header>
+    <main class="offerta-layout mdl-layout__content">
+      <div class="">
+        <form>
+          <div class="block col-contain">
+            <div class="Xcol">
+              <h2>Compila i dati dell'offerta</h2>
+              <div>
+                <h3>Tipo di offerta</h3>
+                <div>
+                  <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="radio-ordertype-hw">
+                    <input type="radio" name="ordertype" id="radio-ordertype-hw" class="mdl-radio__button" value="hw" checked="checked">
+                    <span class="mdl-radio__label">Hardware</span>
+                  </label>
+                </div>
+                <div>
+                  <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="radio-ordertype-sw">
+                    <input type="radio" name="ordertype" id="radio-ordertype-sw" class="mdl-radio__button" value="sw">
+                    <span class="mdl-radio__label">Software</span>
+                  </label>
+                </div>
+              </div>
+              <div class="radio-spacer"> </div>
+              <div>
+                <h3>Dati dell'offerta</h3>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="ordername" size="30" pattern=".+" id="txt-ordername">
+                  <label class="mdl-textfield__label" for="txt-ordername">Nome dell'ordine</label>
+                  <span class="mdl-textfield__error">Il nome non può essere vuoto</span>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="riferimento" size="30" id="txt-riferimento">
+                  <label class="mdl-textfield__label" for="txt-riferimento">Nome della persona di riferimento</label>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="riferimentoEmail" size="30" pattern="^[a-z0-9_]+@[a-z0-9\-]+\.[a-z0-9\-\.]+$"
+                    id="txt-riferimentoEmail">
+                  <label class="mdl-textfield__label" for="txt-riferimentoEmail">Email dell'utente di riferimento</label>
+                  <span class="mdl-textfield__error">Inserire un indirizzo email</span>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="ragione-sociale" size="30" id="txt-ragione-sociale">
+                  <label class="mdl-textfield__label" for="txt-ragione-sociale">Ragione sociale cliente</label>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="comune" size="30" id="txt-comune">
+                  <label class="mdl-textfield__label" for="txt-comune">Comune cliente</label>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="provincia" size="5" id="txt-cap">
+                  <label class="mdl-textfield__label" for="txt-cap">Provincia</label>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="cap" size="30" pattern="^[0-9]{5}$" id="txt-cap">
+                  <label class="mdl-textfield__label" for="txt-cap">CAP</label>
+                  <span class="mdl-textfield__error">Inserire un CAP</span>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="indirizzo" size="30" id="txt-indirizzo">
+                  <label class="mdl-textfield__label" for="txt-indirizzo">Indirizzo</label>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="piva" size="30" pattern="^(IT)*[0-9]{11}$" id="txt-piva">
+                  <label class="mdl-textfield__label" for="txt-piva">Partita IVA</label>
+                  <span class="mdl-textfield__error">Verifica formato P.IVA</span>
+                </div>
+                <br>
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" class="mdl-textfield__input" name="valore" size="30" pattern="^[0-9]+$" id="txt-valore">
+                  <label class="mdl-textfield__label" for="txt-valore">Valore dell'ordine</label>
+                  <span class="mdl-textfield__error">Inserire un importo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="create-offer">Crea offerta</button>
+          <!-- Colored icon button -->
+          <!-- <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--accent" id="create-order">
+            <i class="material-icons">add</i>
+          </button> -->
+          <div class="mdl-layout-spacer">&nbsp;</div>
+        </form>
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <img alt="Add-on logo" class="logo" src="https://cdn2.scuolabook.it/skin/frontend/default_sb/blue/images/logo-osd-footer.png"
+          width="100" height="54">
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <sup style="color:grey">Creazione offerte &copy;Olivetti Scuola Digitale - v1.0.13</sup>
+      </div>
+    </footer>
+  </div>
+  <?!= include('JS'); ?>
+</body>
+
+</html>
