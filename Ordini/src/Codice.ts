@@ -13,10 +13,10 @@ const templateIdSW = "1OL23gmlnvr4ZSEgZwo6eNfrtWB-4Y-1UXY5bs41rchw";
 /** altezza in px della finestra modale */
 const modalHeight = 600;
 /** Colonna in cui è memorizzato lo stock */
-const stockCol = 10;
+const stockCol = 11;
 /** Righe file listino */
 const firstRow = 2;
-const lastRow = 49;
+const lastRow = 50;
 const iRow = 22;
 /** Percentuale spese di spedizione (1,25%)  */
 const transportPercent = 0.0125;
@@ -41,39 +41,29 @@ const CELL_DATA_2_ROW = 24;
 const CELL_ORDER_NR_1 = "A14";
 const CELL_ORDER_NR_2 = "C14";
 // STILI TABELLA
-let headerStyle: any = {};
+const headerStyle: any = {};
 headerStyle[DocumentApp.Attribute.BOLD] = true;
-
-let cellStyle: any = {};
+const cellStyle: any = {};
 cellStyle[DocumentApp.Attribute.BOLD] = false;
 cellStyle[DocumentApp.Attribute.UNDERLINE] = false;
-
-let amountCellStyle: any = {};
+const amountCellStyle: any = {};
 amountCellStyle[DocumentApp.Attribute.BOLD] = false;
 amountCellStyle[DocumentApp.Attribute.ITALIC] = false;
-
-let slantedStyle: any = {};
+const slantedStyle: any = {};
 slantedStyle[DocumentApp.Attribute.STRIKETHROUGH] = true;
 slantedStyle[DocumentApp.Attribute.BOLD] = false;
 slantedStyle[DocumentApp.Attribute.ITALIC] = true;
-
-let paraStyle: any = {};
+const paraStyle: any = {};
 paraStyle[DocumentApp.Attribute.SPACING_AFTER] = 0;
 paraStyle[DocumentApp.Attribute.LINE_SPACING] = 1;
 paraStyle[DocumentApp.Attribute.BOLD] = false;
-
-let pFooterStyle: any = {};
+const pFooterStyle: any = {};
 pFooterStyle[DocumentApp.Attribute.SPACING_AFTER] = 0;
 pFooterStyle[DocumentApp.Attribute.LINE_SPACING] = 1;
 pFooterStyle[DocumentApp.Attribute.BOLD] = true;
-
-let footerStyle: any = {};
+const footerStyle: any = {};
 footerStyle[DocumentApp.Attribute.STRIKETHROUGH] = false;
 footerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = "#f3f3f3";
-
-/*
- * FINE CONFIGURAZIONE
- */
 
 /** Inizializzazione */
 function onInstall(e: any) {
@@ -120,7 +110,6 @@ function CreaOfferta(datiInput: DatoOfferta) {
         templateId = templateIdSW;
     }
     Logger.log("Template selezionato: " + templateId + "[" + JSON.stringify(datiInput.orderType) + "]");
-
     // Aggiorna la variabile currentOrder
     const currentOrder = LeggiDati(firstRow, lastRow, false);
     Logger.log("currentOrder: " + JSON.stringify(currentOrder));
@@ -135,31 +124,24 @@ function CreaOfferta(datiInput: DatoOfferta) {
     const newDocId = newDoc.getId();
     const doc = DocumentApp.openById(newDocId);
     const body = doc.getBody();
-
     // CREAZIONE TABELLA
     let totalCessione = 0;
     let totalOffer = 0;
     let totalItems = 0;
     const range = body.findText(TABELLA);
     const table = body.findElement(DocumentApp.ElementType.TABLE, range).getElement().asTable();
-    //const table = body.findText(TABELLA).getElement().getParent().getParent().asTable();
-    // INTESTAZIONI
+    // DATI ITEMS
     Logger.log("Creazione tabella items");
-    /*const headerRow = table.appendTableRow();
-    addCell(headerRow, "Prodotti e servizi", headerStyle, paraStyle);
-    addCell(headerRow, "Prezzo cessione", headerStyle, paraStyle);
-    addCell(headerRow, "Offerta", headerStyle, paraStyle);
-    addCell(headerRow, "Quantità", headerStyle, paraStyle);//*/
-
-    for (let index = 0; index < currentOrder.length; index++) {
+    //for (let index = 0; index < currentOrder.length; index++) {
+    for (let index = currentOrder.length - 1; index >= 0; index--) {
         const currItem = currentOrder[index];
         totalCessione += currItem.itemCessione * currItem.nrItems;
         totalOffer += currItem.itemOffer * currItem.nrItems;
         totalItems += currItem.nrItems;
-        Logger.log("Inserisco riga " + index + ": " + JSON.stringify(currItem));
+        Logger.log("Inserisco riga ${index}: ${JSON.stringify(currItem)}");
         const currRow = table.appendTableRow();
         // Descrizione
-        addCell(currRow, currItem.itemDesc + " (" + currItem.itemCode + ")", cellStyle, paraStyle);
+        addCell(currRow, "${currItem.itemDesc} (${currItem.itemCode})", cellStyle, paraStyle);
         // Costo listino
         addCell(currRow, ToC(currItem.itemCessione), cellStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
         // Offerta
@@ -167,10 +149,9 @@ function CreaOfferta(datiInput: DatoOfferta) {
         // Quantità
         addCell(currRow, currItem.nrItems.toLocaleString(), cellStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
     }
-
     // SPESE DI SPEDIZIONE
-    const spedizioneCessione = totalCessione * transportPercent;
-    const spedizioneOfferta = totalOffer * transportPercent;
+    const spedizioneCessione = Math.round(totalCessione * transportPercent);
+    const spedizioneOfferta = Math.round(totalOffer * transportPercent);
     totalCessione += spedizioneCessione;
     totalOffer += spedizioneOfferta;
     const currRow = table.appendTableRow();
@@ -182,14 +163,12 @@ function CreaOfferta(datiInput: DatoOfferta) {
     addCell(currRow, ToC(spedizioneOfferta), cellStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
     // Quantità
     addCell(currRow, "1", cellStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
-
     // FOOTER
     const footerRow = table.appendTableRow();
     addCell(footerRow, "TOTALE", slantedStyle, paraStyle);
     addCell(footerRow, " ", slantedStyle, paraStyle);
     addCell(footerRow, " ", slantedStyle, paraStyle);
     addCell(footerRow, ToC(totalCessione), slantedStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
-
     const footerRow2 = table.appendTableRow();
     addCell(footerRow2, "PREZZO A VOI DEDICATO", footerStyle, pFooterStyle);
     addCell(footerRow2, " ", footerStyle, pFooterStyle);
@@ -197,8 +176,7 @@ function CreaOfferta(datiInput: DatoOfferta) {
     addCell(footerRow2, ToC(totalOffer), footerStyle, pFooterStyle, DocumentApp.HorizontalAlignment.RIGHT);
     Logger.log("Creazione tabella items - FINE");
     Logger.log("datiInput: " + JSON.stringify(datiInput));
-
-    // SOSTITUZIONI
+    // SOSTITUZIONE SEGNAPOSTO
     body.replaceText(TABELLA, "");
     body.replaceText(DATA, new Date().toLocaleDateString("it"));
     body.replaceText(DESCRIZIONE, datiInput.descrizione);
@@ -212,7 +190,7 @@ function CreaOfferta(datiInput: DatoOfferta) {
     body.replaceText(INDIRIZZO, datiInput.indirizzo);
     body.replaceText(PIVA, datiInput.pIva);
     Logger.log("Segnaposto sostituiti");
-    InsertOrder(orderNumber, orderFullName, datiInput.orderType.toUpperCase(), datiInput.valore, datiInput.ragioneSociale);
+    InsertOrder(orderNumber, orderFullName, datiInput.orderType.toUpperCase(), totalOffer.toLocaleString(), datiInput.ragioneSociale);
     Logger.log("Ordine inserito");
 }
 
@@ -396,6 +374,7 @@ function include(filename: string) {
 
 /** Scrive come valuta */
 function ToC(amount: number) {
+    //TODO Manca separatore delle migliaia
     return "€ " + amount.toFixed(2).replace(".", ",");
 }
 /* 
@@ -451,6 +430,5 @@ interface DatoOfferta {
     prov: string;
     indirizzo: string;
     pIva: string;
-    valore: string;
     orderType: string;
 }
