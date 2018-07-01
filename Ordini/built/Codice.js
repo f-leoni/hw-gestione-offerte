@@ -13,10 +13,10 @@ var templateIdSW = "1OL23gmlnvr4ZSEgZwo6eNfrtWB-4Y-1UXY5bs41rchw";
 /** altezza in px della finestra modale */
 var modalHeight = 600;
 /** Colonna in cui è memorizzato lo stock */
-var stockCol = 10;
+var stockCol = 11;
 /** Righe file listino */
 var firstRow = 2;
-var lastRow = 49;
+var lastRow = 50;
 var iRow = 22;
 /** Percentuale spese di spedizione (1,25%)  */
 var transportPercent = 0.0125;
@@ -64,9 +64,6 @@ pFooterStyle[DocumentApp.Attribute.BOLD] = true;
 var footerStyle = {};
 footerStyle[DocumentApp.Attribute.STRIKETHROUGH] = false;
 footerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = "#f3f3f3";
-/*
- * FINE CONFIGURAZIONE
- */
 /** Inizializzazione */
 function onInstall(e) {
     onOpen(e);
@@ -129,20 +126,15 @@ function CreaOfferta(datiInput) {
     var totalItems = 0;
     var range = body.findText(TABELLA);
     var table = body.findElement(DocumentApp.ElementType.TABLE, range).getElement().asTable();
-    //const table = body.findText(TABELLA).getElement().getParent().getParent().asTable();
-    // INTESTAZIONI
+    // DATI ITEMS
     Logger.log("Creazione tabella items");
-    /*const headerRow = table.appendTableRow();
-    addCell(headerRow, "Prodotti e servizi", headerStyle, paraStyle);
-    addCell(headerRow, "Prezzo cessione", headerStyle, paraStyle);
-    addCell(headerRow, "Offerta", headerStyle, paraStyle);
-    addCell(headerRow, "Quantità", headerStyle, paraStyle);//*/
-    for (var index = 0; index < currentOrder.length; index++) {
+    //for (let index = 0; index < currentOrder.length; index++) {
+    for (var index = currentOrder.length - 1; index >= 0; index--) {
         var currItem = currentOrder[index];
         totalCessione += currItem.itemCessione * currItem.nrItems;
         totalOffer += currItem.itemOffer * currItem.nrItems;
         totalItems += currItem.nrItems;
-        Logger.log("Inserisco riga " + index + ": " + JSON.stringify(currItem));
+        Logger.log("Inserisco riga: " + index + "\n" + JSON.stringify(currItem));
         var currRow_1 = table.appendTableRow();
         // Descrizione
         addCell(currRow_1, currItem.itemDesc + " (" + currItem.itemCode + ")", cellStyle, paraStyle);
@@ -154,8 +146,8 @@ function CreaOfferta(datiInput) {
         addCell(currRow_1, currItem.nrItems.toLocaleString(), cellStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
     }
     // SPESE DI SPEDIZIONE
-    var spedizioneCessione = totalCessione * transportPercent;
-    var spedizioneOfferta = totalOffer * transportPercent;
+    var spedizioneCessione = Math.round(totalCessione * transportPercent);
+    var spedizioneOfferta = Math.round(totalOffer * transportPercent);
     totalCessione += spedizioneCessione;
     totalOffer += spedizioneOfferta;
     var currRow = table.appendTableRow();
@@ -180,7 +172,7 @@ function CreaOfferta(datiInput) {
     addCell(footerRow2, ToC(totalOffer), footerStyle, pFooterStyle, DocumentApp.HorizontalAlignment.RIGHT);
     Logger.log("Creazione tabella items - FINE");
     Logger.log("datiInput: " + JSON.stringify(datiInput));
-    // SOSTITUZIONI
+    // SOSTITUZIONE SEGNAPOSTO
     body.replaceText(TABELLA, "");
     body.replaceText(DATA, new Date().toLocaleDateString("it"));
     body.replaceText(DESCRIZIONE, datiInput.descrizione);
@@ -194,7 +186,7 @@ function CreaOfferta(datiInput) {
     body.replaceText(INDIRIZZO, datiInput.indirizzo);
     body.replaceText(PIVA, datiInput.pIva);
     Logger.log("Segnaposto sostituiti");
-    InsertOrder(orderNumber, orderFullName, datiInput.orderType.toUpperCase(), datiInput.valore, datiInput.ragioneSociale);
+    InsertOrder(orderNumber, orderFullName, datiInput.orderType.toUpperCase(), totalOffer.toLocaleString(), datiInput.ragioneSociale);
     Logger.log("Ordine inserito");
 }
 function addCell(row, text, style, paragraphStyle, hAlignment) {
@@ -359,6 +351,7 @@ function include(filename) {
 }
 /** Scrive come valuta */
 function ToC(amount) {
+    //TODO Manca separatore delle migliaia
     return "€ " + amount.toFixed(2).replace(".", ",");
 }
 /*

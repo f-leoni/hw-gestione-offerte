@@ -138,10 +138,10 @@ function CreaOfferta(datiInput: DatoOfferta) {
         totalCessione += currItem.itemCessione * currItem.nrItems;
         totalOffer += currItem.itemOffer * currItem.nrItems;
         totalItems += currItem.nrItems;
-        Logger.log("Inserisco riga ${index}: ${JSON.stringify(currItem)}");
+        Logger.log("Inserisco riga: " + index + "\n" + JSON.stringify(currItem));
         const currRow = table.appendTableRow();
         // Descrizione
-        addCell(currRow, "${currItem.itemDesc} (${currItem.itemCode})", cellStyle, paraStyle);
+        addCell(currRow, currItem.itemDesc + " (" + currItem.itemCode + ")", cellStyle, paraStyle);
         // Costo listino
         addCell(currRow, ToC(currItem.itemCessione), cellStyle, paraStyle, DocumentApp.HorizontalAlignment.RIGHT);
         // Offerta
@@ -197,7 +197,7 @@ function CreaOfferta(datiInput: DatoOfferta) {
 function addCell(row: GoogleAppsScript.Document.TableRow, text: string, style: any, paragraphStyle: any, 
     hAlignment: GoogleAppsScript.Document.HorizontalAlignment = DocumentApp.HorizontalAlignment.LEFT) {
     const td1 = row.appendTableCell(text).setAttributes(style);
-    var paragraph = td1.getChild(0).asParagraph();
+    const paragraph = td1.getChild(0).asParagraph();
     paragraph.setAttributes(paragraphStyle);
     paragraph.setAlignment(hAlignment);
 }
@@ -234,17 +234,17 @@ function CreaOrdine(datiInput: DatoOrdine) {
     const templateDoc = DriveApp.getFileById(templateId);
     const date = new Date();
     const month = date.getMonth() + 1;
-    var day = date.getDate();
-    var year = date.getFullYear();
-    var dateString = "" + day + "/" + month + "/" + year;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const dateString = "" + day + "/" + month + "/" + year;
     Logger.log("Data corrente: " + dateString);
-    var orderFullName = datiInput.orderName;
-    var orderAddress = datiInput.orderAddress;
+    const orderFullName = datiInput.orderName;
+    const orderAddress = datiInput.orderAddress;
     // Crea un nuovo documento dal template e sostituisce i dati
-    var newDoc = templateDoc.makeCopy(orderFullName);
-    var newDocId = newDoc.getId();
-    var file = SpreadsheetApp.openById(newDocId);
-    var sheet = file.getSheets()[0];
+    const newDoc = templateDoc.makeCopy(orderFullName);
+    const newDocId = newDoc.getId();
+    const file = SpreadsheetApp.openById(newDocId);
+    const sheet = file.getSheets()[0];
 
     for (let index = 0; index < currentOrder.length; index++) {
         const currItem = currentOrder[index];
@@ -295,16 +295,16 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStock: boolea
     /** Dati ordine corrente */
     let currentOrder: ItemOrdine[] = new Array();
     Logger.log("Inizio LeggiDati");
-    var file = SpreadsheetApp.openById(ListinoId);
-    var ss = file.getSheets()[0];
-    for (var riga: number = rigaFinale; riga >= rigaIniziale; riga--) {
+    const file = SpreadsheetApp.openById(ListinoId);
+    const ss = file.getSheets()[0];
+    for (let riga: number = rigaFinale; riga >= rigaIniziale; riga--) {
         const rangeToCheck = ss.getRange(riga, 2, 1, 10); // 10 columns starting with column 2, so B-J range 
         const readValues = rangeToCheck.getValues();
         const isChecked = readValues[0][0];
         if (isChecked) {
             Logger.log("Riga" + riga);
-            var currValue = readValues[0][1].toString();
-            var nrItems: number = parseInt(currValue);
+            const currValue = readValues[0][1].toString();
+            let nrItems: number = parseInt(currValue);
             Logger.log("Numero oggetti: " + readValues);
             if (nrItems == 0 || isNaN(nrItems)) {
                 nrItems = 1;
@@ -333,7 +333,7 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStock: boolea
 /** Aggiunge un item all'ordine */
 function AggiungiItem(currentOrder: ItemOrdine[], nrItems: number, itemCode: string,
     itemDesc: string, itemPrice: number, itemCessione: number, itemOffer: number, itemStock: number) {
-    var item: ItemOrdine = {
+    const item: ItemOrdine = {
         nrItems: nrItems,
         itemCode: itemCode,
         itemDesc: itemDesc,
@@ -349,8 +349,8 @@ function AggiungiItem(currentOrder: ItemOrdine[], nrItems: number, itemCode: str
 /** Aggiorna lo stock sottraendo la quantità venduta */
 function AggiornaStock(ss: GoogleAppsScript.Spreadsheet.Sheet, row: number, nrItems: number) {
     Logger.log("Aggiorno lo stock");
-    var currStock = parseInt(ss.getRange(row, stockCol).getValue().toString());
-    var newStock = currStock - nrItems;
+    const currStock = parseInt(ss.getRange(row, stockCol).getValue().toString());
+    const newStock = currStock - nrItems;
     Logger.log("Alla riga " + row + " da " + currStock + " a " + newStock);
     ss.getRange(row, stockCol).setValue(newStock);
 }
@@ -361,8 +361,8 @@ function AggiornaStock(ss: GoogleAppsScript.Spreadsheet.Sheet, row: number, nrIt
 /** sostituisce nel contenuto di una cella un template con un valore  */
 function cellReplaceText(sheet: GoogleAppsScript.Spreadsheet.Sheet, cell: string, template: string, replacement: string) {
     Logger.log("Sostituzione nella cella " + cell + " di " + template + " con " + replacement);
-    var dateCell = sheet.getRange(cell);
-    var dateCellContent = dateCell.getDisplayValue().replace(template, replacement);
+    const dateCell = sheet.getRange(cell);
+    const dateCellContent = dateCell.getDisplayValue().replace(template, replacement);
     sheet.getRange(cell).setValue(dateCellContent);
 }
 
