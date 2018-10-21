@@ -32,9 +32,6 @@ or
 - clasp login # (this is needed only once)
 - clasp push
 
-### 
-- 
-
 ### Order Usage 
 
 - Open "Catalogo Olivetti File"
