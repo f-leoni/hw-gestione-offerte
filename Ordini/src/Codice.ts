@@ -16,7 +16,7 @@ const modalHeight = 600;
 const stockCol = 11;
 /** Righe file listino */
 const firstRow = 2;
-const lastRow = 50;
+const lastRow = 70;
 const iRow = 22;
 /** Percentuale spese di spedizione (1,25%)  */
 const transportPercent = 0.0125;
@@ -76,7 +76,19 @@ function onOpen(e: any) {
         .createMenu("-Ordini OSD-")
         .addItem("Nuova Offerta", "showModalOfferte")
         .addItem("Nuovo Ordine", "showModalOrdini")
+        .addItem("Pulisci Foglio", "clearSheet")
         .addToUi();
+}
+
+/** pulisce i dati del foglio */
+
+function clearSheet() {
+    const file = SpreadsheetApp.openById(ListinoId);
+    const ss = file.getSheets()[0];
+
+    ss.getRange(2, 2, lastRow).setValue(false);
+    ss.getRange(2, 3, lastRow).setValue("");
+
 }
 
 /** Mostra interfaccia HTML */
@@ -374,8 +386,7 @@ function include(filename: string) {
 
 /** Scrive come valuta */
 function ToC(amount: number) {
-    //TODO Manca separatore delle migliaia
-    return "€ " + amount.toFixed(2).replace(".", ",");
+    return "€ " + amount.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 /* 
  * TIPI E INTERFACCE 

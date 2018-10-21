@@ -1,7 +1,11 @@
 # Google Docs Scripts
 
-## Offerte
+## Ordini v1.1
 #### Creating offer and order documents from a catalogue sheet
+
+### What's new
+- Added a menu item to clean the sheet
+- Thousands separators
 
 ### Quick Start
 
@@ -9,6 +13,27 @@
 - clone repo: `git clone https://github.com/olivettiscuoladigitale/hw-gestione-offerte` 
 - inside dir Ordini: `npm install` 
 - Done
+
+### Compiling
+
+- tsc --pretty
+- Done
+
+### Pulling code to GoogleDocs
+- clasp login # (this is needed only once)
+- clasp pull
+
+or 
+
+- clasp login # (this is needed only once)
+- clasp clone <scriptId>
+
+### Pushing code to GoogleDocs
+- clasp login # (this is needed only once)
+- clasp push
+
+### 
+- 
 
 ### Order Usage 
 
