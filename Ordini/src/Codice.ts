@@ -40,6 +40,11 @@ const CELL_DATA_2_COL = "E";
 const CELL_DATA_2_ROW = 24;
 const CELL_ORDER_NR_1 = "A14";
 const CELL_ORDER_NR_2 = "C14";
+const TOTAL_START_COL = 11;
+const QTY_START_COL = 9;
+const EXAMPLE_ROW = 21;
+const ORDERROW_START_COL = 2;
+const ORDERROW_COLS_NR = 10;
 // STILI TABELLA
 const headerStyle: any = {};
 headerStyle[DocumentApp.Attribute.BOLD] = true;
@@ -65,7 +70,7 @@ const footerStyle: any = {};
 footerStyle[DocumentApp.Attribute.STRIKETHROUGH] = false;
 footerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = "#f3f3f3";
 
-/** Inizializzazione */
+/** Inizializzazione e installazione */
 function onInstall(e: any) {
     onOpen(e);
 }
@@ -291,13 +296,13 @@ function CreaOrdine(datiInput: DatoOrdine) {
     /** Numero di righe da sommare per totale (numero item + 1) */
     const sumRows = currentOrder.length + 1;
     /** Formula per totale */
-    sheet.getRange(iRow + currentOrder.length + 1, 11, 1, 1)//(start row, start column, number of rows, number of columns
+    sheet.getRange(iRow + currentOrder.length + 1, TOTAL_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Formula per Q.tà */
-    sheet.getRange(iRow + currentOrder.length + 1, 9, 1, 1)//(start row, start column, number of rows, number of columns
+    sheet.getRange(iRow + currentOrder.length + 1, QTY_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Elimino riga di esempio */
-    sheet.deleteRow(21);
+    sheet.deleteRow(EXAMPLE_ROW);
 
     Logger.log("Segnaposto sostituiti");
 }
@@ -310,7 +315,7 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStock: boolea
     const file = SpreadsheetApp.openById(ListinoId);
     const ss = file.getSheets()[0];
     for (let riga: number = rigaFinale; riga >= rigaIniziale; riga--) {
-        const rangeToCheck = ss.getRange(riga, 2, 1, 10); // 10 columns starting with column 2, so B-J range 
+        const rangeToCheck = ss.getRange(riga, ORDERROW_START_COL, 1, ORDERROW_COLS_NR); // 10 columns starting with column 2, so B-J range 
         const readValues = rangeToCheck.getValues();
         const isChecked = readValues[0][0];
         if (isChecked) {
@@ -428,7 +433,7 @@ interface ItemOrdine {
     itemStock: number;
 }
 
-/** Interfacci descrizione item offerta */
+/** Interfaccia descrizione item offerta */
 interface DatoOfferta {
     orderName: string;
     descrizione: string;

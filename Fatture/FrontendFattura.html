@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <?!= include('CSS'); ?>
+</head>
+
+<body>
+  <div class="mdl-layout mdl-layout--fixed-header mdl-js-layout mdl-color--grey-100">
+    <header class="mdl-layout__header is-casting-shadow">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title" style="color:white;">Creazione fatture Olivetti</span>
+        <div class="mdl-layout-spacer"></div>
+      </div>
+    </header>
+    <main class="fattura-layout mdl-layout__content">
+      <div class="">
+        <form>
+          <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" id="create-offer">Crea Fattura</button>
+          <!-- Colored icon button -->
+          <!-- <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--accent" id="create-order">
+            <i class="material-icons">add</i>
+          </button> -->
+          <div class="mdl-layout-spacer">&nbsp;</div>
+        </form>
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <img alt="Add-on logo" class="logo" src="https://cdn2.scuolabook.it/skin/frontend/default_sb/blue/images/logo-osd-footer.png"
+          width="100" height="54">
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <sup style="color:grey">Creazione fatture &copy;Olivetti - v0.0.1 beta</sup>
+      </div>
+    </footer>
+  </div>
+  <?!= include('JS'); ?>
+</body>
+
+</html>
