@@ -4,58 +4,39 @@
 const debug = false;
 /** ID documenti  */
 const invoicesFileID = "1eqLHaMm9DFpofqGtETu8Mu7sUCak7plWHyRV37lbV0A";
-const invoiceTemplateID ="1i8VS32ksIrcUvJJOrn983xDgrE5qy9sbo4KfdPRODXs";
-/** altezza in px della finestra modale */
-const modalHeight = 600;
+const invoiceTemplateID = "1i8VS32ksIrcUvJJOrn983xDgrE5qy9sbo4KfdPRODXs";
 /** Righe file fatture */
-const firstRow = 2;
-const lastRow = 70;
-const iRow = 22;
+const firstRow = parseInt(ReadConfigValue("Prima riga fatture");
+const lastRow = parseInt(ReadConfigValue("Ultima riga fatture"));
+const statusCol = parseInt(ReadConfigValue("Colonna stato fattura"));
+const iRow = parseInt(ReadConfigValue("Riga dati template"));
 // SEGNAPOSTO
-const RAGIONE_SOCIALE = "<RAGIONE_SOCIALE>";
-const INDIRIZZO = "<INDIRIZZO>";
-const CODICE_SAP = "<CODICE_SAP>";
-const CODICE_CIG = "<CODICE_CIG>";
-const NR_ORDINE = "<NR_ORDINE>";
-const UFF_VENDITE ="<UFF_VENDITE>"; //OLSE
-const DATA = "<DATA>";
-const EWBS = "<EWBS>"; //A200V01920C030120000_001 
+const RAGIONE_SOCIALE = ReadConfigValue("Segnaposto Ragione Sociale");
+const INDIRIZZO = ReadConfigValue("Segnaposto Indirizzo");
+const SAPCODE = ReadConfigValue("Segnaposto Codice SAP");
+const CIGCODE = ReadConfigValue("Segnaposto Codice CIG");
+const NR_ORDINE = ReadConfigValue("Segnaposto Nr Ordine");
+const SALES_CODE = ReadConfigValue("Segnaposto Uff. Vendite"); //OLSE - OLSD
+const DATA = ReadConfigValue("Segnaposto Data");
+const EWBS = ReadConfigValue("Segnaposto EWBS"); //A200V01920C030120000_001 
 // RIFERIMENTI CELLE SHEET RICHIESTA FATTURA
-const CELL_ADDRESS = "E9";
-const CELL_DATA_1 = "G14";
-const CELL_DATA_2_COL = "E";
-const CELL_DATA_2_ROW = 24;
-const CELL_ORDER_NR_1 = "B14";
-const CELL_ORDER_NR_2 = "D14";
-const TOTAL_START_COL = 11;
-const QTY_START_COL = 9;
-const EXAMPLE_ROW = 21;
-const INVOICEROW_START_COL = 2;
-const INVOICEROW_COLS_NR = 13;
-// STILI TABELLA
-const headerStyle: any = {};
-headerStyle[DocumentApp.Attribute.BOLD] = true;
-const cellStyle: any = {};
-cellStyle[DocumentApp.Attribute.BOLD] = false;
-cellStyle[DocumentApp.Attribute.UNDERLINE] = false;
-const amountCellStyle: any = {};
-amountCellStyle[DocumentApp.Attribute.BOLD] = false;
-amountCellStyle[DocumentApp.Attribute.ITALIC] = false;
-const slantedStyle: any = {};
-slantedStyle[DocumentApp.Attribute.STRIKETHROUGH] = true;
-slantedStyle[DocumentApp.Attribute.BOLD] = false;
-slantedStyle[DocumentApp.Attribute.ITALIC] = true;
-const paraStyle: any = {};
-paraStyle[DocumentApp.Attribute.SPACING_AFTER] = 0;
-paraStyle[DocumentApp.Attribute.LINE_SPACING] = 1;
-paraStyle[DocumentApp.Attribute.BOLD] = false;
-const pFooterStyle: any = {};
-pFooterStyle[DocumentApp.Attribute.SPACING_AFTER] = 0;
-pFooterStyle[DocumentApp.Attribute.LINE_SPACING] = 1;
-pFooterStyle[DocumentApp.Attribute.BOLD] = true;
-const footerStyle: any = {};
-footerStyle[DocumentApp.Attribute.STRIKETHROUGH] = false;
-footerStyle[DocumentApp.Attribute.BACKGROUND_COLOR] = "#f3f3f3";
+const CELL_ADDRESS = ReadConfigValue("Template Cella indirizzo");
+const CELL_DATA_1 = ReadConfigValue("Template Cella data 1");
+const CELL_DATA_2_COL = ReadConfigValue("Template Col data 2"); "E";
+const CELL_DATA_2_ROW = ReadConfigValue("Template Riga data 2");
+const CELL_CIGCODE = ReadConfigValue("Template Cella CIG");
+const CELL_ORDER_NR_1 = ReadConfigValue("Template Cella Ordine");
+const CELL_NAME = ReadConfigValue("Template Cella Ragione Sociale");
+const CELL_SAPCODE = ReadConfigValue("Template Cella Codice SAP");
+const CELL_EWBS = ReadConfigValue("Template Cella EWBS");
+const CELL_SALESCODE = ReadConfigValue("Template Cella Ufficio Vendite");
+const TOTAL_START_COL = parseInt(ReadConfigValue("Colonna Totale"));
+const QTY_START_COL = parseInt(ReadConfigValue("Colonna Quantità"));
+const EXAMPLE_ROW = parseInt(ReadConfigValue("Riga Esempio"));
+const INVOICEROW_START_COL = parseInt(ReadConfigValue("Colonna iniziale fattura"));
+const INVOICEROW_COLS_NR = parseInt(ReadConfigValue("Numero Colonne Fattura"));
+
+var filename = "";
 
 /** Inizializzazione e installazione */
 function onInstall(e: any) {
@@ -66,45 +47,25 @@ function onInstall(e: any) {
 function onOpen(e: any) {
     SpreadsheetApp.getUi()
         .createMenu("-Fatture OSD-")
-        .addItem("Nuova Fattura da selezione", "createInvoiceFromSelection")
+        .addItem("Nuova Fattura da selezione", "CreateInvoiceFromSelection")
         .addItem("Pulisci Foglio", "clearSheet")
         .addToUi();
 }
 
-/** Mostra interfaccia HTML */
-function showModalFatture() {
-    // APRE DIALOG HTML
-    const html = HtmlService.createTemplateFromFile('FrontendFattura');
-    const template = html.evaluate()
-        .setSandboxMode(HtmlService.SandboxMode.IFRAME)
-        .setHeight(modalHeight);
-    //SpreadsheetApp.getUi().showModalDialog(template, 'Crea nuova Fattura');
-}
-
 /** Crea fattura dalle righe selezionate  */
-function createInvoiceFromSelection() {
-    var activeSheet = SpreadsheetApp.getActiveSheet();
-    var sheetName = activeSheet.getName();
-    var selection = activeSheet.getSelection();
-    Logger.log('Current Cell: ' + selection.getCurrentCell().getA1Notation());
-    Logger.log('Active Range: ' + selection.getActiveRange().getA1Notation());
-    var ranges =  selection.getActiveRangeList().getRanges();
-    Logger.log('Ranges: ' + ranges.length);
-    for (var i = 0; i < ranges.length; i++) {
-        Logger.log('Active Ranges: ' + ranges[i].getA1Notation());
-      }      
-    Logger.log('Active Sheet: ' + selection.getActiveSheet().getName());
-}
-
-/** Crea nuova fattura */
-function CreaFattura(datiInput: InvoiceItem) {
+function CreateInvoiceFromSelection() {
     var activeSheet = SpreadsheetApp.getActiveSheet();
     var sheetName = activeSheet.getName();
     Logger.log("Leggo i dati");
-    const currentInvoice = LeggiDati(firstRow, lastRow);
-    Logger.log("Esco");
+    var currentInvoices = LeggiDati(firstRow, lastRow);
+    Logger.log("Dati letti");
+    Logger.log(JSON.stringify(currentInvoices));
+    if (currentInvoices.length == 0) {
+        showOkPrompt("Non hai selezionato nessuna riga!");
+        return;
+    }
     // return; 
-    //Logger.log("CreaFAttura: " + JSON.stringify(datiInput));
+    //Logger.log("CreaFattura: " + JSON.stringify(datiInput));
     const templateId = invoiceTemplateID;
     const templateDoc = DriveApp.getFileById(templateId);
     const date = new Date();
@@ -113,51 +74,64 @@ function CreaFattura(datiInput: InvoiceItem) {
     const year = date.getFullYear();
     const dateString = "" + day + "/" + month + "/" + year;
     Logger.log("Data corrente: " + dateString);
-    const orderFullName = sheetName + GetDateString();
-    const orderAddress = currentInvoice[0].address;
+    //filename = "Ft_" + currentInvoices[0].productType + "_" + currentInvoices[0].shortname + "_" + currentInvoices[0].year + pad(currentInvoices[0].month,2); //GetDateString();
+    const orderAddress = currentInvoices[0].address;
+    const ragioneSociale = currentInvoices[0].name;
+    const sapCode = currentInvoices[0].sapCode;
+    const cigCode = currentInvoices[0].cigCode;
+    const ewbs = currentInvoices[0].ewbs;
+    const salesCode = currentInvoices[0].salesCode;
+    const orderNr = currentInvoices[0].orderNr;
     // Crea un nuovo documento dal template e sostituisce i dati
-    const newDoc = templateDoc.makeCopy(orderFullName);
+    const newDoc = templateDoc.makeCopy(filename);
     const newDocId = newDoc.getId();
     const file = SpreadsheetApp.openById(newDocId);
     const sheet = file.getSheets()[0];
 
-    for (let index = 0; index < currentInvoice.length; index++) {
-        const currItem = currentInvoice[index];
+    for (let index = 0; index < currentInvoices.length; index++) {
+        const currItem = currentInvoices[index];
         Logger.log("Inserisco riga " + index + ": " + JSON.stringify(currItem));
         sheet.insertRowAfter(21);
+        //Calcolo Importo Colonna 11
         sheet.getRange(iRow, 11, 1, 1)//(start row, start column, number of rows, number of columns
             .setFormulaR1C1("=R[0]C[-2]*R[0]C[-1]");
-        sheet.getRange(iRow, 5, 1, 4).merge();
-        sheet.getRange(iRow, 2, 1, 2).merge();
-        sheet.getRange(iRow, 1, 1, 10)//(start row, start column, number of rows, number of columns
+        sheet.getRange(iRow, 12, 1, 1)//(start row, start column, number of rows, number of columns
+            .setValue(currItem.ewbs)
+        sheet.getRange(iRow, 5, 1, 3).merge();
+        sheet.getRange(iRow, 3, 1, 2).merge();
+        sheet.getRange(iRow, 2, 1, 9)//(start row, start column, number of rows, number of columns
             .setValues([[
-                currentInvoice.length - index,
-                currItem.itemCode,
-                "",
-                "",
-                currItem.itemDesc,
-                "",
-                "",
-                "",
-                currItem.nrItems,
-                currItem.itemPrice
+                currentInvoices.length - index,  //B
+                currItem.productCode,           //C
+                "",                             //D
+                currItem.description,           //E
+                "",                             //F
+                "",                             //G
+                "",                             //H
+                currItem.nrItems,               //I
+                currItem.price,                 //J
             ]]);
     }
-    Logger.log("Inizio sostituzione datiInput: " + JSON.stringify(datiInput));
+    //Logger.log("Inizio sostituzione datiInput: " + JSON.stringify(datiInput));
+    cellReplaceText(sheet, CELL_SAPCODE, SAPCODE, sapCode);
+    cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, orderNr);
+    cellReplaceText(sheet, CELL_CIGCODE, CIGCODE, cigCode);
+    cellReplaceText(sheet, CELL_EWBS, EWBS, ewbs);
+    cellReplaceText(sheet, CELL_NAME, RAGIONE_SOCIALE, ragioneSociale);
     cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderAddress);
-    cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, orderFullName);
-    cellReplaceText(sheet, CELL_ORDER_NR_2, NR_ORDINE, orderFullName);
+    cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, filename);
+    cellReplaceText(sheet, CELL_SALESCODE, SALES_CODE, salesCode);
     cellReplaceText(sheet, CELL_DATA_1, DATA, dateString);
-    const currData2Row = CELL_DATA_2_ROW + currentInvoice.length + 1;
+    const currData2Row = CELL_DATA_2_ROW + currentInvoices.length + 1;
     cellReplaceText(sheet, CELL_DATA_2_COL + currData2Row, DATA, dateString);
 
     /** Numero di righe da sommare per totale (numero item + 1) */
-    const sumRows = currentInvoice.length + 1;
+    const sumRows = currentInvoices.length + 1;
     /** Formula per totale */
-    sheet.getRange(iRow + currentInvoice.length + 1, TOTAL_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
+    sheet.getRange(iRow + currentInvoices.length, TOTAL_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Formula per Q.tà */
-    sheet.getRange(iRow + currentInvoice.length + 1, QTY_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
+    sheet.getRange(iRow + currentInvoices.length, QTY_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Elimino riga di esempio */
     sheet.deleteRow(EXAMPLE_ROW);
@@ -166,15 +140,15 @@ function CreaFattura(datiInput: InvoiceItem) {
 }
 
 /** legge dal foglio i dati della fattura */
-function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStock: boolean = true) {
+function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boolean = true) {
     /** Dati ordine corrente */
     let currentInvoice: InvoiceItem[] = new Array();
     Logger.log("Inizio LeggiDati");
     const file = SpreadsheetApp.openById(invoicesFileID);
     const ss = file.getSheets()[0];
     for (let riga: number = rigaFinale; riga >= rigaIniziale; riga--) {
-        // 13 columns starting with column 2, so B-N range 
-        const rangeToCheck = ss.getRange(riga, INVOICEROW_START_COL, 1, INVOICEROW_COLS_NR); 
+        // 15 columns starting with column 2, so B-P range 
+        const rangeToCheck = ss.getRange(riga, INVOICEROW_START_COL, 1, INVOICEROW_COLS_NR);
         const readValues = rangeToCheck.getValues();
         const isChecked = readValues[0][0];
         if (isChecked) {
@@ -185,16 +159,62 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStock: boolea
             if (nrItems == 0 || isNaN(nrItems)) {
                 nrItems = 1;
             }
-            const itemCode: string = readValues[0][3].toString();
-            const itemDescription: string = readValues[0][4].toString();
-            const itemPrice: number = parseFloat(readValues[0][5].toString());
-            const itemCessione: number = parseInt(readValues[0][7].toString());
-            const itemOffer: number = parseInt(readValues[0][8].toString());
-            const itemStock: number = parseInt(readValues[0][9].toString());
-            Logger.log("Aggiungo item " + itemCode);
-            AggiungiItem(currentInvoice, nrItems, itemCode, itemDescription, itemPrice, itemCessione, itemOffer, itemStock);
-            if (updateStock) {
-                AggiornaStock(ss, riga, nrItems);
+            // Ragione Sociale
+            const itemYear: number = readValues[0][1].toString();
+            Logger.log("  itemYear: " + itemYear);
+            const itemMonth: number = readValues[0][2].toString();
+            Logger.log("  itemMonth: " + itemMonth);
+            const itemShortname: string = readValues[0][3].toString();
+            Logger.log("  itemShortname: " + itemShortname);
+            const itemProductType: string = readValues[0][4].toString();
+            Logger.log("  productType: " + itemProductType);
+            const itemOrderNr: string = readValues[0][5].toString();
+            Logger.log("  itemOrderNr: " + itemOrderNr);
+            const itemName: string = readValues[0][6].toString();
+            Logger.log("  itemName: " + itemName);
+            const itemAddress: string = readValues[0][7].toString();
+            Logger.log("  itemAddress: " + itemAddress);
+            const itemSapCode: string = readValues[0][9].toString();
+            Logger.log("  itemSapCode: " + itemSapCode);
+            const itemCigCode: string = readValues[0][10].toString();
+            Logger.log("  itemCigCode: " + itemCigCode);
+            const itemEwbsCode: string = readValues[0][11].toString();
+            Logger.log("  itemEwbsCode: " + itemEwbsCode);
+            const itemSalesCode: string = readValues[0][12].toString();
+            Logger.log("  itemSalesCode: " + itemSalesCode);
+            const itemDescription: string = readValues[0][13].toString();
+            Logger.log("  itemDescription: " + itemDescription);
+            const itemProductCode: string = readValues[0][14].toString();
+            Logger.log("  itemProductCode: " + itemProductCode);
+            const itemQty: number = readValues[0][15].toString();
+            Logger.log("  itemQty: " + itemQty);
+            const itemPrice: number = parseFloat(readValues[0][16].toString());
+            Logger.log("  itemPrice: " + itemPrice);
+
+            Logger.log("Aggiungo item " + itemName);
+            AddiItem(currentInvoice,
+                itemYear,
+                itemMonth,
+                itemName,
+                itemShortname,
+                itemAddress,
+                itemSapCode,
+                itemCigCode,
+                itemEwbsCode,
+                itemSalesCode,
+                itemDescription,
+                itemProductCode,
+                itemQty,
+                itemPrice,
+                itemProductType,
+                itemOrderNr,
+            );
+            // Define filename only once in each run
+            if (filename == "") {   
+                filename = "Ft_" + itemProductType + "_" + itemShortname + "_" + itemYear + pad(itemMonth, 2);
+            }
+            if (updateStatus) {
+                UpdateStatus(ss, riga, filename);
             }
         }
     }
@@ -208,19 +228,46 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStock: boolea
 
 /* TOOLS */
 /** Aggiunge un item all'ordine */
-function AggiungiItem(currentOrder: InvoiceItem[], nrItems: number, itemCode: string,
-    itemDesc: string, itemPrice: number, itemCessione: number, itemOffer: number, itemStock: number) {
+function AddiItem(currentInvoice: InvoiceItem[], itemYear: number, itemMonth: number, itemName: string, itemShortname: string, itemAddress: string,
+    itemSapCode: string, itemCigCode: string, itemEwbsCode: string, itemSalesCode: string, itemDescription: string,
+    itemProductCode: string, itemQty: number, itemPrice: number, itemProductType: string, itemOrderNr: string) {
     const item: InvoiceItem = {
-        nrItems: nrItems,
-        itemCode: itemCode,
-        itemDesc: itemDesc,
-        itemPrice: itemPrice,
-        itemCessione: itemCessione,
-        itemOffer: itemOffer,
-        itemStock: itemStock
+        name: itemName,
+        shortname: itemShortname,
+        year: itemYear,
+        month: itemMonth,
+        address: itemAddress,
+        sapCode: itemSapCode,
+        cigCode: itemCigCode,
+        ewbs: itemEwbsCode,
+        salesCode: itemSalesCode,
+        description: itemDescription,
+        productCode: itemProductCode,
+        nrItems: itemQty,
+        price: itemPrice,
+        productType: itemProductType,
+        orderNr: itemOrderNr,
     };
-    currentOrder.push(item);
+    currentInvoice.push(item);
     Logger.log("Aggiunto item " + JSON.stringify(item));
+} //*/
+
+/** Legge un valore dalla configurazione  */
+function ReadConfigValue(paramName: string) {
+    var value = "";
+    const A = 0;
+    const B = 1;
+    const sheet = SpreadsheetApp.getActive().getSheetByName('Config');
+    var data = sheet.getDataRange().getValues();
+
+    for (var i = 0; i < data.length; i++) {
+        if (data[i][A] == paramName) { //[1] because column B
+            Logger.log((i + 1))
+            value = data[i][B];
+        }
+    }
+    return value;
+
 }
 
 /** Sastituisce nel contenuto di una cella un template con un valore  */
@@ -238,18 +285,39 @@ function include(filename: string) {
 }
 
 /** Aggiorna lo stock sottraendo la quantità venduta */
-function AggiornaStock(ss: GoogleAppsScript.Spreadsheet.Sheet, row: number, nrItems: number) {
-    Logger.log("Aggiorno lo stock");
-    /*const currStock = parseInt(ss.getRange(row, stockCol).getValue().toString());
-    const newStock = currStock - nrItems;
-    Logger.log("Alla riga " + row + " da " + currStock + " a " + newStock);
-    ss.getRange(row, stockCol).setValue(newStock);//*/
+function UpdateStatus(ss: GoogleAppsScript.Spreadsheet.Sheet, row: number, newStatus: string) {
+    const currStatus = parseInt(ss.getRange(row, statusCol).getValue().toString());
+    Logger.log("Aggiorno lo stato alla riga " + row + " da " + currStatus + " a " + newStatus);
+    ss.getRange(row, statusCol).setValue(newStatus);
+    ss.getRange(row, statusCol).setBackground("#FFFF00");
 }
 
 /** Clear script */
 function clearSheet() {
+    const file = SpreadsheetApp.openById(invoicesFileID);
+    const ss = file.getSheets()[0];
+
+    ss.getRange(2, 2, lastRow).setValue(false);
+    //ss.getRange(2, 3, lastRow).setValue("");
+
 }
 
+function showOkPrompt(text: string, title: string = "Attenzione") {
+    var ui = SpreadsheetApp.getUi(); // Same variations.
+
+    var result = ui.alert(
+        title,
+        text,
+        ui.ButtonSet.OK);
+
+    return;
+}
+
+function pad(num, size) {
+    var s = num + "";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
 
 /* 
  * TIPI E INTERFACCE 
@@ -274,14 +342,21 @@ declare interface Date {
     yyyymmdd(): string;
 }
 
-/** Interfacci descrizione item ordine */
+/** Interfaccia descrizione item ordine */
 interface InvoiceItem {
+    year: number,
+    month: number,
+    sapCode: string;
+    cigCode: string;
+    ewbs: string;
+    name: string;
+    shortname: string;
+    salesCode: string;
     address: string;
     nrItems: number;
-    itemCode: string;
-    itemDesc: string;
-    itemPrice: number;
-    itemCessione: number;
-    itemOffer: number;
-    itemStock: number;
+    description: string;
+    productCode: string;
+    price: number;
+    productType: string;
+    orderNr: string;
 }
