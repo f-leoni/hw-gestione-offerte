@@ -17,9 +17,13 @@
     var ordername = $('input[name=ordername').val();
     console.log("Inizio createOffer(" + ordername + ")");
     var address = $('input[name=address').val();
+    var sapID = $('input[name=sapid').val();
+    var ragioneSociale = $('input[name=ragionesociale').val();
     var datiInput = {
       orderName: ordername,
-      orderAddress: address
+      orderAddress: address,
+      orderSaoId: sapID,
+      orderRagioneSociale: ragioneSociale,
     }
 
     google.script.run

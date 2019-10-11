@@ -33,6 +33,7 @@ const COMUNE = "<COMUNE>";
 const PROVINCIA = "<PROVINCIA>";
 const CAP = "<CAP>";
 const PIVA = "<PIVA>";
+const SAP_ID = "<SAP_ID>";
 const DESCRIZIONE = "<DESCRIZIONE>";
 const TABELLA = "<TABELLA>";
 // RIFERIMENTI CELLE SHEET ORDINE
@@ -42,6 +43,8 @@ const CELL_DATA_2_COL = "E";
 const CELL_DATA_2_ROW = 24;
 const CELL_ORDER_NR_1 = "A14";
 const CELL_ORDER_NR_2 = "C14";
+const CELL_SAP_ID = "D5";
+const CELL_RAGIONE_SOCIALE = "D4";
 const TOTAL_START_COL = 11;
 const QTY_START_COL = 9;
 const EXAMPLE_ROW = 21;
@@ -264,6 +267,8 @@ function CreaOrdine(datiInput: DatoOrdine) {
     Logger.log("Data corrente: " + dateString);
     const orderFullName = datiInput.orderName;
     const orderAddress = datiInput.orderAddress;
+    const orderSapID = datiInput.orderSaoId;
+    const orderRagioneSociale = datiInput.orderRagioneSociale;
     // Crea un nuovo documento dal template e sostituisce i dati
     const newDoc = templateDoc.makeCopy(orderFullName);
     const newDocId = newDoc.getId();
@@ -289,10 +294,13 @@ function CreaOrdine(datiInput: DatoOrdine) {
                 "",
                 "",
                 currItem.nrItems,
-                currItem.itemPrice
+                currItem.itemOffer
             ]]);
     }
     Logger.log("Inizio sostituzione datiInput: " + JSON.stringify(datiInput));
+    cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderAddress);
+    cellReplaceText(sheet, CELL_SAP_ID, SAP_ID, orderSapID);
+    cellReplaceText(sheet, CELL_RAGIONE_SOCIALE, RAGIONE_SOCIALE, orderRagioneSociale);
     cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderAddress);
     cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, orderFullName);
     cellReplaceText(sheet, CELL_ORDER_NR_2, NR_ORDINE, orderFullName);
@@ -432,6 +440,8 @@ declare interface Date {
 interface DatoOrdine {
     orderName: string;
     orderAddress: string;
+    orderSaoId: string;
+    orderRagioneSociale: string;
 }
 
 /** Interfacci descrizione item ordine */
