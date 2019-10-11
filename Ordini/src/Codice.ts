@@ -3,12 +3,14 @@
  */
 const debug = false;
 /** ID documenti  */
-const OffersCatalogID = "1O-5Ren-h9xJy04rYxQLGSf7dMmGYhgYWsWhk459rSVs";
+const OffersCatalogID = "1xCYT3r9RdC9YQzBComTPlCMFfjcE461uDu4RW0uK-K0";
 //const OffersCatalogID = "1hbd9DhHzkCzdp4d3DKTNb1dQZXGb_aLdH1ItkVpkP0I"; // COPIA PER TEST
-const templateIdOrder = "1q_Y1vMNIYHBrne-6irggMVtZqlJpBq8lqGf8K-HEvuU";
-const ListinoId = "1JYWsDb3bx1eHS3D8JmwHkptUbkJ9R9Lof_RQMegMx3k";
-const templateIdHW = "1Q6P7OovyFC3hPMVY_UT5o3-vCTvnIkhwOArSAL0XQ-0";
-const templateIdSW = "1OL23gmlnvr4ZSEgZwo6eNfrtWB-4Y-1UXY5bs41rchw";
+const templateIdOrder = "1qDOt-CkwVqyNAUWsxNwVyeCm47FM-3n-FysW0FLg00Y";
+const ListinoId = "1xDjw0LHv2CPwTdYYmJq2CghTzKKL7PDqiPg9KvoItjc";
+const templateIdHW = "1vFLMd8138HhGmr7p-QY66nxV3C-kVyTFEob-VOzaJ-4";
+const templateIdSW = "1fo74BIIEmreuHDwYfnoxZ-R4gNlGwZywAmuS0mRBNpQ";
+const offerteFolderID = "1Jp5Woyqxl7gdYdHGXevK5rXAGe06zyKs";
+const ordiniFolderID = "1_dkSRWnulYTXEnSQgAD2O437RTSzXW7q";
 //const ListinoId = "1jseXrwiSeRG7DPnvx3vGjDdxVagDRZCCKgpRL8Wr8Fg"; // COPIA PER TEST
 /** altezza in px della finestra modale */
 const modalHeight = 600;
@@ -208,10 +210,15 @@ function CreaOfferta(datiInput: DatoOfferta) {
     body.replaceText(PIVA, datiInput.pIva);
     Logger.log("Segnaposto sostituiti");
     InsertOrder(orderNumber, orderFullName, datiInput.orderType.toUpperCase(), totalOffer.toLocaleString(), datiInput.ragioneSociale);
+
+    /* Sposto nella cartella Offerte */
+    Logger.log("Sposto l'ordine nella cartella 'Offerte'");
+    DriveApp.getFolderById(offerteFolderID).addFile(newDoc);
+    DriveApp.getRootFolder().removeFile(newDoc);
     Logger.log("Ordine inserito");
 }
 
-function addCell(row: GoogleAppsScript.Document.TableRow, text: string, style: any, paragraphStyle: any, 
+function addCell(row: GoogleAppsScript.Document.TableRow, text: string, style: any, paragraphStyle: any,
     hAlignment: GoogleAppsScript.Document.HorizontalAlignment = DocumentApp.HorizontalAlignment.LEFT) {
     const td1 = row.appendTableCell(text).setAttributes(style);
     const paragraph = td1.getChild(0).asParagraph();
@@ -303,8 +310,13 @@ function CreaOrdine(datiInput: DatoOrdine) {
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Elimino riga di esempio */
     sheet.deleteRow(EXAMPLE_ROW);
-
     Logger.log("Segnaposto sostituiti");
+
+    /* Sposto nella cartella Ordini */
+    Logger.log("Sposto l'ordine nella cartella 'Ordini'");
+    DriveApp.getFolderById(ordiniFolderID).addFile(newDoc);
+    DriveApp.getRootFolder().removeFile(newDoc);
+    Logger.log("Ordine inserito");
 }
 
 /** legge dal foglio i dati dell'ordine (e aggiorna lo stock se updateStock è true) */

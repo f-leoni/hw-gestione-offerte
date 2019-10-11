@@ -5,22 +5,21 @@
    * On document load, assign click handlers to each button
    */
   $(function () {
-    $('#create-order').click(createOrder);
-    $('#create-offer').click(createOffer);
+    $('#create-invoice').click(CreateInvoice);
   });
 
   /**
    * Runs a server-side function to translate the user-selected text and update
    * the sidebar UI with the resulting translation.
    */
-  function createOrder() {
-    var ordername = $('input[name=ordername').val();
-    console.log("Inizio createOffer(" + ordername + ")");
-    var address = $('input[name=address').val();
-    var datiInput = {
-      orderName: ordername,
-      orderAddress: address
-    }
+  function createInvoice() {
+    //var ordername = $('input[name=ordername').val();
+    console.log("Inizio createInvoice");
+    //var address = $('input[name=address').val();
+    //var datiInput = {
+    //  orderName: ordername,
+    //  orderAddress: address
+    //}
 
     google.script.run
       .withSuccessHandler(
@@ -34,8 +33,8 @@
           element.disabled = false;
         })
       .withUserObject(this)
-      .CreaOrdine(datiInput);
-    console.log("Fine createOffer(" + ordername + ")");
+      .CreateInvoice();
+    console.log("Fine createInvoice");
   }
 
   /**
