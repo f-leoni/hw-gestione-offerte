@@ -298,10 +298,9 @@ function CreaOrdine(datiInput: DatoOrdine) {
             ]]);
     }
     Logger.log("Inizio sostituzione datiInput: " + JSON.stringify(datiInput));
-    cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderAddress);
     cellReplaceText(sheet, CELL_SAP_ID, SAP_ID, orderSapID);
     cellReplaceText(sheet, CELL_RAGIONE_SOCIALE, RAGIONE_SOCIALE, orderRagioneSociale);
-    cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderAddress);
+    cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderRagioneSociale + " - " + orderAddress);
     cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, orderFullName);
     cellReplaceText(sheet, CELL_ORDER_NR_2, NR_ORDINE, orderFullName);
     cellReplaceText(sheet, CELL_DATA_1, DATA, dateString);
