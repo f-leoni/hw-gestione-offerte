@@ -191,6 +191,25 @@ function InsertOrder(
     sheet.appendRow([OrderNr, OrderName, OrderType, OrderValue, ClientName]);
 }
 
+/* TOOLS */
+
+/** Legge un valore dalla configurazione  */
+function ReadConfigValue(paramName: string) {
+    var value = "";
+    const A = 0;
+    const B = 1;
+    const sheet = SpreadsheetApp.getActive().getSheetByName('Config');
+    var data = sheet.getDataRange().getValues();
+
+    for (var i = 0; i < data.length; i++) {
+        if (data[i][A] == paramName) { //[1] because column B
+            Logger.log((i + 1))
+            value = data[i][B].toString();
+        }
+    }
+    return value;
+}
+
 /** Chiede all'utente di inserire una stringa */
 function promptForString(question: string, hint: string, canBeEmpty: boolean = true) {
     const ui = DocumentApp.getUi();
