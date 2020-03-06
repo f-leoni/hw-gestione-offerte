@@ -12,6 +12,8 @@ const firstRow = parseInt(ReadConfigValue("Prima riga fatture"));
 const lastRow = parseInt(ReadConfigValue("Ultima riga fatture"));
 const statusCol = parseInt(ReadConfigValue("Colonna stato fattura"));
 const iRow = parseInt(ReadConfigValue("Riga dati template"));
+// CARTELLE
+const fattureFolderID = ReadConfigValue("ID cartella Fatture");
 // SEGNAPOSTO
 const RAGIONE_SOCIALE = ReadConfigValue("Segnaposto Ragione Sociale");
 const INDIRIZZO = ReadConfigValue("Segnaposto Indirizzo");
@@ -76,7 +78,7 @@ function CreateInvoiceFromSelection() {
     const day = date.getDate();
     const year = date.getFullYear();
     const dateString = "" + day + "/" + month + "/" + year;
-    Logger.log("Data corrente: " + dateString);
+    Logger.log("Data corrente: ${dateString}");
     //filename = "Ft_" + currentInvoices[0].productType + "_" + currentInvoices[0].shortname + "_" + currentInvoices[0].year + pad(currentInvoices[0].month,2); //GetDateString();
     const orderAddress = currentInvoices[0].address;
     const ragioneSociale = currentInvoices[0].name;
@@ -84,7 +86,10 @@ function CreateInvoiceFromSelection() {
     const cigCode = currentInvoices[0].cigCode;
     const ewbs = currentInvoices[0].ewbs;
     const salesCode = currentInvoices[0].salesCode;
-    const orderNr = currentInvoices[0].orderNr;
+    var orderNr = currentInvoices[0].orderNr;
+    if (currentInvoices.length > 1 && currentInvoices[0].orderNr.toLowerCase() != "contratto scuolabook") {
+        orderNr = currentInvoices[0].orderNr + " e altri";
+    }
     // Crea un nuovo documento dal template e sostituisce i dati
     const newDoc = templateDoc.makeCopy(filename);
     const newDocId = newDoc.getId();
@@ -102,12 +107,16 @@ function CreateInvoiceFromSelection() {
             .setValue(currItem.ewbs)
         sheet.getRange(iRow, 5, 1, 3).merge();
         sheet.getRange(iRow, 3, 1, 2).merge();
+        var description = currItem.description;
+        if (currItem.orderNr.toLowerCase() != "contratto scuolabook") {
+            description = description + " (" + currItem.orderNr + ")";
+        }
         sheet.getRange(iRow, 2, 1, 9)//(start row, start column, number of rows, number of columns
             .setValues([[
-                currentInvoices.length - index,  //B
+                currentInvoices.length - index, //B
                 currItem.productCode,           //C
                 "",                             //D
-                currItem.description,           //E
+                description,                    //E
                 "",                             //F
                 "",                             //G
                 "",                             //H
@@ -140,6 +149,23 @@ function CreateInvoiceFromSelection() {
     sheet.deleteRow(EXAMPLE_ROW);
 
     Logger.log("Segnaposto sostituiti");
+
+    /* Sposto nella cartella Fatture */
+    Logger.log("Sposto l'ordine nella cartella 'Offerte'");
+    DriveApp.getFolderById(fattureFolderID).addFile(newDoc);
+    DriveApp.getRootFolder().removeFile(newDoc);
+    Logger.log("Fattura inserita");
+
+    /* Popup di conferma termine operazioni */
+    const ui = SpreadsheetApp.getUi();
+    var response = ui.alert(
+        'Operazione terminata ',
+        "Creato  documento " + filename + ". Pulire la selezione?",
+        ui.ButtonSet.YES_NO);
+    if (response == ui.Button.YES) {
+        clearSheet();
+    }
+
 }
 
 /** legge vettore righe attive  */
