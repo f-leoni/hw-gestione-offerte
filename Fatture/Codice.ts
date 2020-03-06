@@ -7,6 +7,7 @@ const invoicesFileID = ReadConfigValue("ID file fatture"); //ID del file contene
 const invoiceTemplateID = ReadConfigValue("ID template fattura"); //ID del template di richiesta fatturazione
 const invoiceFolderID = ReadConfigValue("ID cartella fatture"); //ID del template di richiesta fatturazione
 //Logger.log("Cartella Fatture ID["+invoiceFolderID+"]");
+
 /** Righe file fatture */
 const firstRow = parseInt(ReadConfigValue("Prima riga fatture"));
 const lastRow = parseInt(ReadConfigValue("Ultima riga fatture"));
@@ -53,6 +54,7 @@ function onOpen(e: any) {
         .createMenu("-Fatture OSD-")
         .addItem("Nuova Fattura da selezione", "CreateInvoiceFromSelection")
         .addItem("Pulisci Foglio", "clearSheet")
+        //.addItem("DBG Leggi righe selezionate", "LeggiRigheSelezionate")
         .addToUi();
 }
 
@@ -154,6 +156,27 @@ function CreateInvoiceFromSelection() {
 
 }
 
+/** legge vettore righe attive  */
+function LeggiRigheSelezionate(rigaIniziale: number = firstRow, rigaFinale: number = lastRow) {
+    //Logger.log("controllo le righe dalla " + firstRow + " alla " + lastRow);
+    let activeRows: number[] = [];
+    const file = SpreadsheetApp.openById(invoicesFileID);
+    const ss = file.getSheets()[0];
+    /*Parametri: riga, colonna, nrighe, nrcolonne */
+    const rangeToCheck = ss.getRange(rigaIniziale, INVOICEROW_START_COL, rigaFinale - rigaIniziale, 1).getValues();
+    //Logger.log("  Array è " + JSON.stringify(rangeToCheck));
+
+    for (let i: number = 0; i < rangeToCheck.length; i++) {
+        Logger.log("  Dato [0][" + i + "] Valore " + rangeToCheck[i][0]);
+        if (rangeToCheck[i][0] == true) {
+            activeRows.push(i + rigaIniziale);
+            //Logger.log("E' attiva la riga " + i);
+        }
+    }
+
+    return activeRows;
+}
+
 /** legge dal foglio i dati della fattura */
 function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boolean = true) {
     /** Dati ordine corrente */
@@ -161,8 +184,11 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boole
     Logger.log("Inizio LeggiDati");
     const file = SpreadsheetApp.openById(invoicesFileID);
     const ss = file.getSheets()[0];
-    for (let riga: number = rigaFinale; riga >= rigaIniziale; riga--) {
-        // 15 columns starting with column 2, so B-P range 
+    const activeRows: Array<number> = LeggiRigheSelezionate();
+    //for (let riga: number = rigaFinale; riga >= rigaIniziale; riga--) {
+    for (let i: number = activeRows.length - 1; i >= 0; i--) {
+        const riga = activeRows[i];
+        // 17 columns starting with column 2, so B-R range 
         const rangeToCheck = ss.getRange(riga, INVOICEROW_START_COL, 1, INVOICEROW_COLS_NR);
         const readValues = rangeToCheck.getValues();
         const isChecked = readValues[0][0];
@@ -228,7 +254,7 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boole
                 itemChannel
             );
             // Define filename only once in each run
-            if (filename == "") {   
+            if (filename == "") {
                 filename = "Ft_" + itemProductType + "_" + itemShortname + "_" + itemYear + pad(itemMonth, 2);
             }
             if (updateStatus) {
