@@ -3,45 +3,43 @@
  */
 const debug = false;
 /** ID documenti  */
-const invoicesFileID = ReadConfigValue("ID file fatture"); //ID del file contenete le fatture
-const invoiceTemplateID = ReadConfigValue("ID template fattura"); //ID del template di richiesta fatturazione
-const invoiceFolderID = ReadConfigValue("ID cartella fatture"); //ID del template di richiesta fatturazione
-//Logger.log("Cartella Fatture ID["+invoiceFolderID+"]");
-
+let invoicesFileID;
+let invoiceTemplateID;
+let invoiceFolderID;
 /** Righe file fatture */
-const firstRow = parseInt(ReadConfigValue("Prima riga fatture"));
-const lastRow = parseInt(ReadConfigValue("Ultima riga fatture"));
-const statusCol = parseInt(ReadConfigValue("Colonna stato fattura"));
-const iRow = parseInt(ReadConfigValue("Riga dati template"));
-// CARTELLE
-const fattureFolderID = ReadConfigValue("ID cartella Fatture");
+let firstRow;
+let lastRow;
+let statusCol;
+let iRow;
+// Cartelle
+let fattureFolderID;
 // SEGNAPOSTO
-const RAGIONE_SOCIALE = ReadConfigValue("Segnaposto Ragione Sociale");
-const INDIRIZZO = ReadConfigValue("Segnaposto Indirizzo");
-const SAPCODE = ReadConfigValue("Segnaposto Codice SAP");
-const CIGCODE = ReadConfigValue("Segnaposto Codice CIG");
-const NR_ORDINE = ReadConfigValue("Segnaposto Nr Ordine");
-const SALES_CODE = ReadConfigValue("Segnaposto Uff. Vendite"); //OLSE - OLSD
-const DATA = ReadConfigValue("Segnaposto Data");
-const EWBS = ReadConfigValue("Segnaposto EWBS"); //A200V01920C030120000_001 
-const CANALE = ReadConfigValue("Segnaposto Canale"); // Es: IT01/Z2
+let RAGIONE_SOCIALE;
+let INDIRIZZO;
+let SAPCODE;
+let CIGCODE;
+let NR_ORDINE;
+let SALES_CODE;
+let DATA;
+let EWBS;
+let CANALE;
 // RIFERIMENTI CELLE SHEET RICHIESTA FATTURA
-const CELL_ADDRESS = ReadConfigValue("Template Cella indirizzo");
-const CELL_DATA_1 = ReadConfigValue("Template Cella data 1");
-const CELL_DATA_2_COL = ReadConfigValue("Template Col data 2"); "E";
-const CELL_DATA_2_ROW = ReadConfigValue("Template Riga data 2");
-const CELL_CIGCODE = ReadConfigValue("Template Cella CIG");
-const CELL_ORDER_NR_1 = ReadConfigValue("Template Cella Ordine");
-const CELL_NAME = ReadConfigValue("Template Cella Ragione Sociale");
-const CELL_SAPCODE = ReadConfigValue("Template Cella Codice SAP");
-const CELL_EWBS = ReadConfigValue("Template Cella EWBS");
-const CELL_SALESCODE = ReadConfigValue("Template Cella Ufficio Vendite");
-const CELL_CANALE = ReadConfigValue("Template Cella Canale");
-const TOTAL_START_COL = parseInt(ReadConfigValue("Colonna Totale"));
-const QTY_START_COL = parseInt(ReadConfigValue("Colonna Quantità"));
-const EXAMPLE_ROW = parseInt(ReadConfigValue("Riga Esempio"));
-const INVOICEROW_START_COL = parseInt(ReadConfigValue("Colonna iniziale fattura"));
-const INVOICEROW_COLS_NR = parseInt(ReadConfigValue("Numero Colonne Fattura"));
+let CELL_ADDRESS;
+let CELL_DATA_1;
+let CELL_DATA_2_COL;
+let CELL_DATA_2_ROW;
+let CELL_CIGCODE;
+let CELL_ORDER_NR_1;
+let CELL_NAME;
+let CELL_SAPCODE;
+let CELL_EWBS;
+let CELL_SALESCODE;
+let CELL_CANALE;
+let TOTAL_START_COL;
+let QTY_START_COL;
+let EXAMPLE_ROW;
+let INVOICEROW_START_COL;
+let INVOICEROW_COLS_NR;
 var filename = "";
 
 /** Inizializzazione e installazione */
@@ -59,13 +57,57 @@ function onOpen(e: any) {
         .addToUi();
 }
 
+/** Legge dati di configuraz<ione dal foglio "Config" */
+function readConfig() {
+    /** ID documenti  */
+    invoicesFileID = ReadConfigValue("ID file fatture"); //ID del file contenete le fatture
+    invoiceTemplateID = ReadConfigValue("ID template fattura"); //ID del template di richiesta fatturazione
+    invoiceFolderID = ReadConfigValue("ID cartella fatture"); //ID del template di richiesta fatturazione
+    //Logger.log("Cartella Fatture ID["+invoiceFolderID+"]");
+
+    /** Righe file fatture */
+    firstRow = parseInt(ReadConfigValue("Prima riga fatture"));
+    lastRow = parseInt(ReadConfigValue("Ultima riga fatture"));
+    statusCol = parseInt(ReadConfigValue("Colonna stato fattura"));
+    iRow = parseInt(ReadConfigValue("Riga dati template"));
+    // CARTELLE
+    fattureFolderID = ReadConfigValue("ID cartella Fatture");
+    // SEGNAPOSTO
+    RAGIONE_SOCIALE = ReadConfigValue("Segnaposto Ragione Sociale");
+    INDIRIZZO = ReadConfigValue("Segnaposto Indirizzo");
+    SAPCODE = ReadConfigValue("Segnaposto Codice SAP");
+    CIGCODE = ReadConfigValue("Segnaposto Codice CIG");
+    NR_ORDINE = ReadConfigValue("Segnaposto Nr Ordine");
+    SALES_CODE = ReadConfigValue("Segnaposto Uff. Vendite"); //OLSE - OLSD
+    DATA = ReadConfigValue("Segnaposto Data");
+    EWBS = ReadConfigValue("Segnaposto EWBS"); //A200V01920C030120000_001 
+    CANALE = ReadConfigValue("Segnaposto Canale"); // Es: IT01/Z2
+    // RIFERIMENTI CELLE SHEET RICHIESTA FATTURA
+    CELL_ADDRESS = ReadConfigValue("Template Cella indirizzo");
+    CELL_DATA_1 = ReadConfigValue("Template Cella data 1");
+    CELL_DATA_2_COL = ReadConfigValue("Template Col data 2"); "E";
+    CELL_DATA_2_ROW = ReadConfigValue("Template Riga data 2");
+    CELL_CIGCODE = ReadConfigValue("Template Cella CIG");
+    CELL_ORDER_NR_1 = ReadConfigValue("Template Cella Ordine");
+    CELL_NAME = ReadConfigValue("Template Cella Ragione Sociale");
+    CELL_SAPCODE = ReadConfigValue("Template Cella Codice SAP");
+    CELL_EWBS = ReadConfigValue("Template Cella EWBS");
+    CELL_SALESCODE = ReadConfigValue("Template Cella Ufficio Vendite");
+    CELL_CANALE = ReadConfigValue("Template Cella Canale");
+    TOTAL_START_COL = parseInt(ReadConfigValue("Colonna Totale"));
+    QTY_START_COL = parseInt(ReadConfigValue("Colonna Quantità"));
+    EXAMPLE_ROW = parseInt(ReadConfigValue("Riga Esempio"));
+    INVOICEROW_START_COL = parseInt(ReadConfigValue("Colonna iniziale fattura"));
+    INVOICEROW_COLS_NR = parseInt(ReadConfigValue("Numero Colonne Fattura"));
+}
+
 /** Crea fattura dalle righe selezionate  */
 function CreateInvoiceFromSelection() {
     var activeSheet = SpreadsheetApp.getActiveSheet();
     var sheetName = activeSheet.getName();
     Logger.log("Leggo i dati");
     var currentInvoices = LeggiDati(firstRow, lastRow);
-    if(currentInvoices == undefined){
+    if (currentInvoices == undefined) {
         return;
     }
     Logger.log("Dati letti");
@@ -157,7 +199,7 @@ function CreateInvoiceFromSelection() {
     Logger.log("Sposto il file nella cartella 'Fatture'");
     moveFiles(newDocId, folderId);
     Logger.log("Pulizia foglio");
-    if(showYesNoPrompt("Creato  documento " + filename + ". Pulire la selezione?", "Operazione terminata")){
+    if (showYesNoPrompt("Creato  documento " + filename + ". Pulire la selezione?", "Operazione terminata")) {
         clearSheet();
     }
     Logger.log("FINE");
@@ -220,9 +262,9 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boole
             const itemAddress: string = readValues[0][7].toString();
             //Logger.log("  itemAddress: " + itemAddress);
             const itemSapCode: string = readValues[0][9].toString();
-            if(itemSapCode.trim() == "") {
+            if (itemSapCode.trim() == "") {
                 Logger.log("Codice SAP non definito. Chiedo all'utente");
-                if(!showYesNoPrompt("Codice SAP non definito. Si vuole continuare?", "Attenzione!")) {
+                if (!showYesNoPrompt("Codice SAP non definito. Si vuole continuare?", "Attenzione!")) {
                     Logger.log("Uscita per 'Codice SAP non definito'");
                     return undefined;
                 }
@@ -281,10 +323,10 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boole
 
 /* TOOLS */
 /** Aggiunge un item all'ordine */
-function AddiItem(currentInvoice: InvoiceItem[], itemYear: number, itemMonth: number, itemName: string, itemShortname: string, 
-    itemAddress: string,itemSapCode: string, itemCigCode: string, itemEwbsCode: string, itemSalesCode: string, itemDescription: string,
+function AddiItem(currentInvoice: InvoiceItem[], itemYear: number, itemMonth: number, itemName: string, itemShortname: string,
+    itemAddress: string, itemSapCode: string, itemCigCode: string, itemEwbsCode: string, itemSalesCode: string, itemDescription: string,
     itemProductCode: string, itemQty: number, itemPrice: number, itemProductType: string, itemOrderNr: string, itemChannel: string
-    ) {
+) {
     const item: InvoiceItem = {
         name: itemName,
         shortname: itemShortname,
@@ -315,7 +357,7 @@ function ReadConfigValue(paramName: string) {
     const sheet = SpreadsheetApp.getActive().getSheetByName('Config');
     var data = sheet.getDataRange().getValues();
     for (var i = 0; i < data.length; i++) {
-        if (data[i][A] == paramName) {      
+        if (data[i][A] == paramName) {
             value = data[i][B];
             //Logger.log("[" + data[i][A] + "]");     
             break;
@@ -366,7 +408,7 @@ function showOkPrompt(text: string, title: string = "Attenzione") {
 
 /** Show a yes/no choice prompt */
 function showYesNoPrompt(text: string, title: string = "Attenzione") {
-    var ui = SpreadsheetApp.getUi(); 
+    var ui = SpreadsheetApp.getUi();
     var result = ui.alert(
         title,
         text,
@@ -390,11 +432,7 @@ function moveFiles(sourceFileId, targetFolderId) {
     var file = DriveApp.getFileById(sourceFileId);
     file.getParents().next().removeFile(file);
     DriveApp.getFolderById(targetFolderId).addFile(file);
-  }
-
-/* 
- * TIPI E INTERFACCE 
- */
+}
 
 /** Restituisce la data sotto forma di timestamp */
 function GetDateString() {
@@ -409,6 +447,19 @@ function GetDateString() {
     const date = new Date();
     return date.yyyymmdd();
 }
+
+/** Controlla se esiste già un file con il nome passato come parametro */
+function ChechFileExists(filename) {
+    var haBDs = DriveApp.getFilesByName(filename);
+    if (!haBDs.hasNext()) {
+        return true;
+    }
+    return false;
+}
+
+/* 
+ * TIPI E INTERFACCE 
+ */
 
 /** Nuovo metodo per oggetto Date */
 declare interface Date {
@@ -433,4 +484,46 @@ interface InvoiceItem {
     productType: string;
     orderNr: string;
     channel: string;
+}
+
+/** Interfaccia configurazione */
+interface ConfigData {
+    /** ID documenti  */
+    invoicesFileID: string;
+    invoiceTemplateID: string;
+    invoiceFolderID: string;
+    /** Righe file fatture */
+    firstRow: string;
+    lastRow: string;
+    statusCol: string;
+    iRow: string;
+    // Cartelle
+    fattureFolderID: string;
+    // Segnaposto
+    ragioneSociale: string;
+    indirizzo: string;
+    sapcode: string;
+    cigCode: string;
+    nrOrdine: string;
+    salesCode: string;
+    data: string;
+    ewbs: string;
+    canale: string;
+    // Riferimenti celle sheet richiesta fattura
+    cellAddress: string;
+    cellData1: string;
+    cellData2Col: string;
+    cellData2Row: string;
+    cellCigCode: string;
+    cellOrderNr1: string;
+    cellName: string;
+    cellSapCode: string;
+    cellEwbs: string;
+    cellSalesCode: string;
+    cellCanale: string;
+    totalStartCol: string;
+    qtyStartCol: string;
+    exampleRow: string;
+    invoiceRowStartCol: string;
+    invoiceRowColsNr: string;
 }
