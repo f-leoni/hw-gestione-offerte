@@ -1,46 +1,9 @@
 /*
  * CONFIGURAZIONE
  */
-const debug = false;
 SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione');
-/** ID documenti  */
-let invoicesFileID;
-let invoiceTemplateID;
-let invoiceFolderID;
-/** Righe file fatture */
-let firstRow;
-let lastRow;
-let statusCol;
-let iRow;
-// Cartelle
-let fattureFolderID;
-// SEGNAPOSTO
-let RAGIONE_SOCIALE;
-let INDIRIZZO;
-let SAPCODE;
-let CIGCODE;
-let NR_ORDINE;
-let SALES_CODE;
-let DATA;
-let EWBS;
-let CANALE;
-// RIFERIMENTI CELLE SHEET RICHIESTA FATTURA
-let CELL_ADDRESS;
-let CELL_DATA_1;
-let CELL_DATA_2_COL;
-let CELL_DATA_2_ROW;
-let CELL_CIGCODE;
-let CELL_ORDER_NR_1;
-let CELL_NAME;
-let CELL_SAPCODE;
-let CELL_EWBS;
-let CELL_SALESCODE;
-let CELL_CANALE;
-let TOTAL_START_COL;
-let QTY_START_COL;
-let EXAMPLE_ROW;
-let INVOICEROW_START_COL;
-let INVOICEROW_COLS_NR;
+const debug = false;
+const config: ConfigData = readConfig();
 var filename = "";
 SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione completata');
 
@@ -59,59 +22,15 @@ function onOpen(e: any) {
         .addToUi();
 }
 
-/** Legge dati di configuraz<ione dal foglio "Config" */
-function readConfig() {
-    /** ID documenti  */
-    invoicesFileID = ReadConfigValue("ID file fatture"); //ID del file contenete le fatture
-    invoiceTemplateID = ReadConfigValue("ID template fattura"); //ID del template di richiesta fatturazione
-    invoiceFolderID = ReadConfigValue("ID cartella fatture"); //ID del template di richiesta fatturazione
-    //Logger.log("Cartella Fatture ID["+invoiceFolderID+"]");
-
-    /** Righe file fatture */
-    firstRow = parseInt(ReadConfigValue("Prima riga fatture"));
-    lastRow = parseInt(ReadConfigValue("Ultima riga fatture"));
-    statusCol = parseInt(ReadConfigValue("Colonna stato fattura"));
-    iRow = parseInt(ReadConfigValue("Riga dati template"));
-    // CARTELLE
-    fattureFolderID = ReadConfigValue("ID cartella Fatture");
-    // SEGNAPOSTO
-    RAGIONE_SOCIALE = ReadConfigValue("Segnaposto Ragione Sociale");
-    INDIRIZZO = ReadConfigValue("Segnaposto Indirizzo");
-    SAPCODE = ReadConfigValue("Segnaposto Codice SAP");
-    CIGCODE = ReadConfigValue("Segnaposto Codice CIG");
-    NR_ORDINE = ReadConfigValue("Segnaposto Nr Ordine");
-    SALES_CODE = ReadConfigValue("Segnaposto Uff. Vendite"); //OLSE - OLSD
-    DATA = ReadConfigValue("Segnaposto Data");
-    EWBS = ReadConfigValue("Segnaposto EWBS"); //A200V01920C030120000_001 
-    CANALE = ReadConfigValue("Segnaposto Canale"); // Es: IT01/Z2
-    // RIFERIMENTI CELLE SHEET RICHIESTA FATTURA
-    CELL_ADDRESS = ReadConfigValue("Template Cella indirizzo");
-    CELL_DATA_1 = ReadConfigValue("Template Cella data 1");
-    CELL_DATA_2_COL = ReadConfigValue("Template Col data 2"); "E";
-    CELL_DATA_2_ROW = ReadConfigValue("Template Riga data 2");
-    CELL_CIGCODE = ReadConfigValue("Template Cella CIG");
-    CELL_ORDER_NR_1 = ReadConfigValue("Template Cella Ordine");
-    CELL_NAME = ReadConfigValue("Template Cella Ragione Sociale");
-    CELL_SAPCODE = ReadConfigValue("Template Cella Codice SAP");
-    CELL_EWBS = ReadConfigValue("Template Cella EWBS");
-    CELL_SALESCODE = ReadConfigValue("Template Cella Ufficio Vendite");
-    CELL_CANALE = ReadConfigValue("Template Cella Canale");
-    TOTAL_START_COL = parseInt(ReadConfigValue("Colonna Totale"));
-    QTY_START_COL = parseInt(ReadConfigValue("Colonna Quantità"));
-    EXAMPLE_ROW = parseInt(ReadConfigValue("Riga Esempio"));
-    INVOICEROW_START_COL = parseInt(ReadConfigValue("Colonna iniziale fattura"));
-    INVOICEROW_COLS_NR = parseInt(ReadConfigValue("Numero Colonne Fattura"));
-}
-
 /** Crea fattura dalle righe selezionate  */
 function CreateInvoiceFromSelection() {
     var activeSheet = SpreadsheetApp.getActiveSheet();
     var sheetName = activeSheet.getName();
     Logger.log("Leggo i dati");
     SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura dati');
-    var currentInvoices = LeggiDati(firstRow, lastRow);
+    var currentInvoices = LeggiDati(config.firstRow, config.lastRow);
     SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura dati completata');
-    if(currentInvoices == undefined){
+    if (currentInvoices == undefined) {
         return;
     }
     Logger.log("Dati letti");
@@ -121,8 +40,8 @@ function CreateInvoiceFromSelection() {
         return;
     }
     //Logger.log("CreaFattura: " + JSON.stringify(datiInput));
-    const templateId = invoiceTemplateID;
-    const folderId = invoiceFolderID;
+    const templateId = config.invoiceTemplateID;
+    const folderId = config.invoiceFolderID;
     const templateDoc = DriveApp.getFileById(templateId);
     const date = new Date();
     const month = date.getMonth() + 1;
@@ -153,17 +72,17 @@ function CreateInvoiceFromSelection() {
         Logger.log("Inserisco riga " + index + ": " + JSON.stringify(currItem));
         sheet.insertRowAfter(21);
         //Calcolo Importo Colonna 11
-        sheet.getRange(iRow, 11, 1, 1)//(start row, start column, number of rows, number of columns
+        sheet.getRange(config.iRow, 11, 1, 1)//(start row, start column, number of rows, number of columns
             .setFormulaR1C1("=R[0]C[-2]*R[0]C[-1]");
-        sheet.getRange(iRow, 12, 1, 1)//(start row, start column, number of rows, number of columns
+        sheet.getRange(config.iRow, 12, 1, 1)//(start row, start column, number of rows, number of columns
             .setValue(currItem.ewbs)
-        sheet.getRange(iRow, 5, 1, 3).merge();
-        sheet.getRange(iRow, 3, 1, 2).merge();
+        sheet.getRange(config.iRow, 5, 1, 3).merge();
+        sheet.getRange(config.iRow, 3, 1, 2).merge();
         var description = currItem.description;
         if (currItem.orderNr.toLowerCase() != "contratto scuolabook") {
             description = description + " (" + currItem.orderNr + ")";
         }
-        sheet.getRange(iRow, 2, 1, 9)//(start row, start column, number of rows, number of columns
+        sheet.getRange(config.iRow, 2, 1, 9)//(start row, start column, number of rows, number of columns
             .setValues([[
                 currentInvoices.length - index, //B
                 currItem.productCode,           //C
@@ -177,28 +96,28 @@ function CreateInvoiceFromSelection() {
             ]]);
     }
     //Logger.log("Inizio sostituzione datiInput: " + JSON.stringify(datiInput));
-    cellReplaceText(sheet, CELL_SAPCODE, SAPCODE, sapCode);
-    cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, orderNr);
-    cellReplaceText(sheet, CELL_CIGCODE, CIGCODE, cigCode);
-    cellReplaceText(sheet, CELL_EWBS, EWBS, ewbs);
-    cellReplaceText(sheet, CELL_NAME, RAGIONE_SOCIALE, ragioneSociale);
-    cellReplaceText(sheet, CELL_ADDRESS, INDIRIZZO, orderAddress);
-    cellReplaceText(sheet, CELL_ORDER_NR_1, NR_ORDINE, filename);
-    cellReplaceText(sheet, CELL_SALESCODE, SALES_CODE, salesCode);
-    cellReplaceText(sheet, CELL_DATA_1, DATA, dateString);
-    cellReplaceText(sheet, CELL_CANALE, CANALE, canaleString);
-    const currData2Row = CELL_DATA_2_ROW + currentInvoices.length + 1;
-    cellReplaceText(sheet, CELL_DATA_2_COL + currData2Row, DATA, dateString);
+    cellReplaceText(sheet, config.cellSapCode, config.sapcode, sapCode);
+    cellReplaceText(sheet, config.cellOrderNr1, config.nrOrdine, orderNr);
+    cellReplaceText(sheet, config.cellCigCode, config.cigCode, cigCode);
+    cellReplaceText(sheet, config.cellEwbs, config.ewbs, ewbs);
+    cellReplaceText(sheet, config.cellName, config.ragioneSociale, ragioneSociale);
+    cellReplaceText(sheet, config.cellAddress, config.indirizzo, orderAddress);
+    cellReplaceText(sheet, config.cellOrderNr1, config.nrOrdine, filename);
+    cellReplaceText(sheet, config.cellSalesCode, config.salesCode, salesCode);
+    cellReplaceText(sheet, config.cellData1, config.data, dateString);
+    cellReplaceText(sheet, config.cellCanale, config.canale, canaleString);
+    const currData2Row = config.cellData2Row + currentInvoices.length + 1;
+    cellReplaceText(sheet, config.cellData2Col + currData2Row, config.data, dateString);
     /** Numero di righe da sommare per totale (numero item + 1) */
     const sumRows = currentInvoices.length + 1;
     /** Formula per totale */
-    sheet.getRange(iRow + currentInvoices.length, TOTAL_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
+    sheet.getRange(config.iRow + currentInvoices.length, config.totalStartCol, 1, 1)//(start row, start column, number of rows, number of columns
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Formula per Q.tà */
-    sheet.getRange(iRow + currentInvoices.length, QTY_START_COL, 1, 1)//(start row, start column, number of rows, number of columns
+    sheet.getRange(config.iRow + currentInvoices.length, config.qtyStartCol, 1, 1)//(start row, start column, number of rows, number of columns
         .setFormulaR1C1("=sum(R[-" + sumRows + "]C[0]:R[-1]C[0])");
     /** Elimino riga di esempio */
-    sheet.deleteRow(EXAMPLE_ROW);
+    sheet.deleteRow(config.exampleRow);
     Logger.log("Segnaposto sostituiti");
     SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nCreazione modulo completata');
     // Sposto la fattura nella cartella "Fatture" su Drive 
@@ -215,13 +134,13 @@ function CreateInvoiceFromSelection() {
 }
 
 /** legge vettore righe attive  */
-function LeggiRigheSelezionate(rigaIniziale: number = firstRow, rigaFinale: number = lastRow) {
+function LeggiRigheSelezionate(rigaIniziale: number = config.firstRow, rigaFinale: number = config.lastRow) {
     //Logger.log("controllo le righe dalla " + firstRow + " alla " + lastRow);
     let activeRows: number[] = [];
-    const file = SpreadsheetApp.openById(invoicesFileID);
+    const file = SpreadsheetApp.openById(config.invoicesFileID);
     const ss = file.getSheets()[0];
     /*Parametri: riga, colonna, nrighe, nrcolonne */
-    const rangeToCheck = ss.getRange(rigaIniziale, INVOICEROW_START_COL, rigaFinale - rigaIniziale, 1).getValues();
+    const rangeToCheck = ss.getRange(rigaIniziale, config.invoiceRowStartCol, rigaFinale - rigaIniziale, 1).getValues();
     //Logger.log("  Array è " + JSON.stringify(rangeToCheck));
     for (let i: number = 0; i < rangeToCheck.length; i++) {
         Logger.log("  Dato [0][" + i + "] Valore " + rangeToCheck[i][0]);
@@ -238,13 +157,13 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boole
     /** Dati ordine corrente */
     Logger.log("Inizio LeggiDati");
     let currentInvoice: InvoiceItem[] = new Array();
-    const file = SpreadsheetApp.openById(invoicesFileID);
+    const file = SpreadsheetApp.openById(config.invoicesFileID);
     const ss = file.getSheets()[0];
     const activeRows: Array<number> = LeggiRigheSelezionate();
     for (let i: number = activeRows.length - 1; i >= 0; i--) {
         const riga = activeRows[i];
         // 21 columns starting with column 2, so B-V range 
-        const rangeToCheck = ss.getRange(riga, INVOICEROW_START_COL, 1, INVOICEROW_COLS_NR);
+        const rangeToCheck = ss.getRange(riga, config.invoiceRowStartCol, 1, config.invoiceRowColsNr);
         const readValues = rangeToCheck.getValues();
         const isChecked = readValues[0][0];
         if (isChecked) {
@@ -392,17 +311,17 @@ function include(filename: string) {
 
 /** Aggiorna lo stato aggiungendo il nome del file creato */
 function UpdateStatus(ss: GoogleAppsScript.Spreadsheet.Sheet, row: number, newStatus: string) {
-    const currStatus = parseInt(ss.getRange(row, statusCol).getValue().toString());
+    const currStatus = parseInt(ss.getRange(row, config.statusCol).getValue().toString());
     Logger.log("Aggiorno lo stato alla riga " + row + " da " + currStatus + " a " + newStatus);
-    ss.getRange(row, statusCol).setValue(newStatus);
-    ss.getRange(row, statusCol).setBackground("#FFFF00");
+    ss.getRange(row, config.statusCol).setValue(newStatus);
+    ss.getRange(row, config.statusCol).setBackground("#FFFF00");
 }
 
 /** Clear script */
 function clearSheet() {
-    const file = SpreadsheetApp.openById(invoicesFileID);
+    const file = SpreadsheetApp.openById(config.invoicesFileID);
     const ss = file.getSheets()[0];
-    ss.getRange(2, 2, lastRow).setValue(false);
+    ss.getRange(2, 2, config.lastRow).setValue(false);
 }
 
 /** Show a info prompt */
@@ -466,6 +385,52 @@ function ChechFileExists(filename) {
     return false;
 }
 
+/** Legge dati di configuraz<ione dal foglio "Config" */
+function readConfig() {
+    const configuration: ConfigData = {
+        /** ID documenti  */
+        invoicesFileID: ReadConfigValue("ID file fatture"), //ID del file contenete le fatture
+        invoiceTemplateID: ReadConfigValue("ID template fattura"), //ID del template di richiesta fatturazione
+        invoiceFolderID: ReadConfigValue("ID cartella fatture"), //ID del template di richiesta fatturazione
+        //Logger.log("Cartella Fatture ID["+invoiceFolderID+"]");
+        /** Righe file fatture */
+        firstRow: parseInt(ReadConfigValue("Prima riga fatture")),
+        lastRow: parseInt(ReadConfigValue("Ultima riga fatture")),
+        statusCol: parseInt(ReadConfigValue("Colonna stato fattura")),
+        iRow: parseInt(ReadConfigValue("Riga dati template")),
+        // CARTELLE
+        fattureFolderID: ReadConfigValue("ID cartella Fatture"),
+        // SEGNAPOSTO
+        ragioneSociale: ReadConfigValue("Segnaposto Ragione Sociale"),
+        indirizzo: ReadConfigValue("Segnaposto Indirizzo"),
+        sapcode: ReadConfigValue("Segnaposto Codice SAP"),
+        cigCode: ReadConfigValue("Segnaposto Codice CIG"),
+        nrOrdine: ReadConfigValue("Segnaposto Nr Ordine"),
+        salesCode: ReadConfigValue("Segnaposto Uff. Vendite"), //OLSE - OLSD
+        data: ReadConfigValue("Segnaposto Data"),
+        ewbs: ReadConfigValue("Segnaposto EWBS"), //A200V01920C030120000_001 
+        canale: ReadConfigValue("Segnaposto Canale"), // Es: IT01/Z2
+        // RIFERIMENTI CELLE SHEET RICHIESTA FATTURA
+        cellAddress: ReadConfigValue("Template Cella indirizzo"),
+        cellData1: ReadConfigValue("Template Cella data 1"),
+        cellData2Col: ReadConfigValue("Template Col data 2"),
+        cellData2Row: ReadConfigValue("Template Riga data 2"),
+        cellCigCode: ReadConfigValue("Template Cella CIG"),
+        cellOrderNr1: ReadConfigValue("Template Cella Ordine"),
+        cellName: ReadConfigValue("Template Cella Ragione Sociale"),
+        cellSapCode: ReadConfigValue("Template Cella Codice SAP"),
+        cellEwbs: ReadConfigValue("Template Cella EWBS"),
+        cellSalesCode: ReadConfigValue("Template Cella Ufficio Vendite"),
+        cellCanale: ReadConfigValue("Template Cella Canale"),
+        totalStartCol: parseInt(ReadConfigValue("Colonna Totale")),
+        qtyStartCol: parseInt(ReadConfigValue("Colonna Quantità")),
+        exampleRow: parseInt(ReadConfigValue("Riga Esempio")),
+        invoiceRowStartCol: parseInt(ReadConfigValue("Colonna iniziale fattura")),
+        invoiceRowColsNr: parseInt(ReadConfigValue("Numero Colonne Fattura")),
+    }
+    return configuration;
+}
+
 /* 
  * TIPI E INTERFACCE 
  */
@@ -502,10 +467,10 @@ interface ConfigData {
     invoiceTemplateID: string;
     invoiceFolderID: string;
     /** Righe file fatture */
-    firstRow: string;
-    lastRow: string;
-    statusCol: string;
-    iRow: string;
+    firstRow: number;
+    lastRow: number;
+    statusCol: number;
+    iRow: number;
     // Cartelle
     fattureFolderID: string;
     // Segnaposto
@@ -530,9 +495,9 @@ interface ConfigData {
     cellEwbs: string;
     cellSalesCode: string;
     cellCanale: string;
-    totalStartCol: string;
-    qtyStartCol: string;
-    exampleRow: string;
-    invoiceRowStartCol: string;
-    invoiceRowColsNr: string;
+    totalStartCol: number;
+    qtyStartCol: number;
+    exampleRow: number;
+    invoiceRowStartCol: number;
+    invoiceRowColsNr: number;
 }
