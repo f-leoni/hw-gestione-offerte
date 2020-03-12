@@ -1,15 +1,15 @@
 /*
  * CONFIGURAZIONE
  */
-SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione');
 const debug = false;
 let config: ConfigData;
 let filename = "";
-SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione completata');
 
 /** Inizializzazione e installazione */
 function onInstall(e: any) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione');
     config = readConfig();
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione completata');
     onOpen(e);
 }
 
