@@ -2,6 +2,7 @@
  * CONFIGURAZIONE
  */
 const debug = false;
+SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione');
 /** ID documenti  */
 const invoicesFileID = ReadConfigValue("ID file fatture"); //ID del file contenete le fatture
 const invoiceTemplateID = ReadConfigValue("ID template fattura"); //ID del template di richiesta fatturazione
@@ -43,6 +44,7 @@ const EXAMPLE_ROW = parseInt(ReadConfigValue("Riga Esempio"));
 const INVOICEROW_START_COL = parseInt(ReadConfigValue("Colonna iniziale fattura"));
 const INVOICEROW_COLS_NR = parseInt(ReadConfigValue("Numero Colonne Fattura"));
 var filename = "";
+SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione completata');
 
 /** Inizializzazione e installazione */
 function onInstall(e: any) {
@@ -64,7 +66,9 @@ function CreateInvoiceFromSelection() {
     var activeSheet = SpreadsheetApp.getActiveSheet();
     var sheetName = activeSheet.getName();
     Logger.log("Leggo i dati");
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura dati');
     var currentInvoices = LeggiDati(firstRow, lastRow);
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura dati completata');
     if(currentInvoices == undefined){
         return;
     }
@@ -95,6 +99,7 @@ function CreateInvoiceFromSelection() {
         orderNr = currentInvoices[0].orderNr + " e altri";
     }
     const canaleString = currentInvoices[0].channel;
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nCreazione modulo');
     // Crea un nuovo documento dal template e sostituisce i dati
     const newDoc = templateDoc.makeCopy(filename);
     const newDocId = newDoc.getId();
@@ -153,14 +158,18 @@ function CreateInvoiceFromSelection() {
     /** Elimino riga di esempio */
     sheet.deleteRow(EXAMPLE_ROW);
     Logger.log("Segnaposto sostituiti");
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nCreazione modulo completata');
     // Sposto la fattura nella cartella "Fatture" su Drive 
     Logger.log("Sposto il file nella cartella 'Fatture'");
     moveFiles(newDocId, folderId);
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nSpostamento file');
     Logger.log("Pulizia foglio");
     if(showYesNoPrompt("Creato  documento " + filename + ". Pulire la selezione?", "Operazione terminata")){
         clearSheet();
     }
     Logger.log("FINE");
+    SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nCreazione modulo completata - FINE');
+
 }
 
 /** legge vettore righe attive  */
@@ -192,7 +201,7 @@ function LeggiDati(rigaIniziale: number, rigaFinale: number, updateStatus: boole
     const activeRows: Array<number> = LeggiRigheSelezionate();
     for (let i: number = activeRows.length - 1; i >= 0; i--) {
         const riga = activeRows[i];
-        // 17 columns starting with column 2, so B-R range 
+        // 21 columns starting with column 2, so B-V range 
         const rangeToCheck = ss.getRange(riga, INVOICEROW_START_COL, 1, INVOICEROW_COLS_NR);
         const readValues = rangeToCheck.getValues();
         const isChecked = readValues[0][0];
