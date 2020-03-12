@@ -3,12 +3,13 @@
  */
 SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione');
 const debug = false;
-const config: ConfigData = readConfig();
-var filename = "";
+let config: ConfigData;
+let filename = "";
 SpreadsheetApp.getActiveSpreadsheet().toast(new Date().toLocaleString() + '\nLettura configurazione completata');
 
 /** Inizializzazione e installazione */
 function onInstall(e: any) {
+    config = readConfig();
     onOpen(e);
 }
 
